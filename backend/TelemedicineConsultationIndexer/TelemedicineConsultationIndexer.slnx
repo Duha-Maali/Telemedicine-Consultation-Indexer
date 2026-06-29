@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/TCI.Business/TCI.Business.csproj" />
+  <Project Path="src/TCI.DataAccess/TCI.DataAccess.csproj" />
+  <Project Path="src/TCI.Presentation/TCI.Presentation.csproj" />
+</Solution>
