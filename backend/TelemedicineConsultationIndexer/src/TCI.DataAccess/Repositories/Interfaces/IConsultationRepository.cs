@@ -20,12 +20,5 @@ public interface IConsultationRepository
         CancellationToken cancellationToken = default
         );
 
-    Task<bool> ExistsForDoctorAsync(
-        Guid consultationId,
-        Guid doctorId,
-        CancellationToken cancellationToken = default
-        );
-
     Task AddAsync(Consultation consultation, CancellationToken cancellationToken = default);
-    void Delete(Consultation consultation);
 }

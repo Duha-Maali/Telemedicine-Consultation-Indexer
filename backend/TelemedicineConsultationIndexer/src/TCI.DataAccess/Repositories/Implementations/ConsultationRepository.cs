@@ -28,7 +28,7 @@ public class ConsultationRepository(AppDbContext context) : IConsultationReposit
     {
         return await _context.Consultations
             .AsNoTracking()
-            .Where(consultation => consultation.Id == doctorId)
+            .Where(consultation => consultation.DoctorId == doctorId)
             .OrderByDescending(consultation => consultation.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -37,27 +37,15 @@ public class ConsultationRepository(AppDbContext context) : IConsultationReposit
     {
         return await _context.Consultations
             .AsNoTracking()
-            .Where(consultation => consultation.Id == doctorId && consultation.Status == status)
+            .Where(consultation => 
+                consultation.DoctorId == doctorId 
+                && consultation.Status == status)
             .OrderByDescending(consultation => consultation.CreatedAt)
             .ToListAsync(cancellationToken);
-    }
-
-    public Task<bool> ExistsForDoctorAsync(Guid consultationId, Guid doctorId, CancellationToken cancellationToken = default)
-    {
-        return _context.Consultations.AnyAsync(
-            consultation =>
-                consultation.Id == consultationId &&
-                consultation.DoctorId == doctorId,
-            cancellationToken);
     }
 
     public async Task AddAsync(Consultation consultation, CancellationToken cancellationToken = default)
     {
         await _context.Consultations.AddAsync(consultation, cancellationToken);
-    }
-
-    public void Delete(Consultation consultation)
-    {
-        _context.Consultations.Remove(consultation);
     }
 }

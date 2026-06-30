@@ -4,8 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using TCI.DataAccess.Persistence;
 using TCI.DataAccess.Repositories.Implementations;
 using TCI.DataAccess.Repositories.Interfaces;
+using TCI.DataAccess.UnitOfWork;
 
-namespace TCI.DataAccess.Extensions;
+namespace TCI.DataAccess;
 
 public static class DependencyInjection
 {
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IDoctorRepository, DoctorRepository>();
         services.AddScoped<IConsultationRepository, ConsultationRepository>();
         services.AddScoped<ITranscriptSegmentRepository, TranscriptSegmentRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
 
         return services;
     }
