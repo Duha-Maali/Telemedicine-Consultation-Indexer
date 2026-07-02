@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TCI.Business;
@@ -33,6 +32,21 @@ var jwtSettings =
 if (string.IsNullOrWhiteSpace(jwtSettings.Key))
 {
     throw new InvalidOperationException("JWT signing key is missing.");
+}
+
+if (string.IsNullOrWhiteSpace(jwtSettings.Issuer))
+{
+    throw new InvalidOperationException("JWT issuer is missing.");
+}
+
+if (string.IsNullOrWhiteSpace(jwtSettings.Audience))
+{
+    throw new InvalidOperationException("JWT audience is missing.");
+}
+
+if (jwtSettings.ExpirationMinutes <= 0)
+{
+    throw new InvalidOperationException("JWT expiration minutes must be greater than zero.");
 }
 
 builder.Services
