@@ -13,7 +13,7 @@ using TCI.DataAccess.UnitOfWork;
 
 namespace TCI.Business.Services.Implementations;
 
-public class AuthService(
+public sealed class AuthService(
     IDoctorRepository doctorRepository,
     IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher,
