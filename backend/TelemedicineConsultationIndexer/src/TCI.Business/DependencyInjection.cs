@@ -13,6 +13,8 @@ public static class DependencyInjection
 
         services.AddScoped<IDoctorService, DoctorService>();
 
+        services.AddScoped<IConsultationService, ConsultationService>();
+
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddAutoMapper(configurations =>
