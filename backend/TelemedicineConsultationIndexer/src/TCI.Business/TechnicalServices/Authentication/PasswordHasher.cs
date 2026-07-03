@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using TCI.Business.Abstractions.Authentication;
 
-namespace TCI.Presentation.Authentication;
+namespace TCI.Business.TechnicalServices.Authentication;
 
 public sealed class PasswordHasher : IPasswordHasher
 {

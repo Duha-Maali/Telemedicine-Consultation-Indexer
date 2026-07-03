@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Runtime.CompilerServices;
-
-namespace TCI.Presentation.Authentication;
+﻿namespace TCI.Business.TechnicalServices.Authentication;
 
 public sealed class JwtSettings
 {

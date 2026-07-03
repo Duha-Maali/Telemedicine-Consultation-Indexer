@@ -7,7 +7,8 @@ using TCI.Business.Abstractions.Authentication;
 using TCI.Business.Models.Authentication;
 using TCI.DataAccess.Entities;
 
-namespace TCI.Presentation.Authentication;
+
+namespace TCI.Business.TechnicalServices.Authentication;
 
 public sealed class JwtTokenGenerator(IOptions<JwtSettings> jwtOptions) : ITokenGenerator
 {
