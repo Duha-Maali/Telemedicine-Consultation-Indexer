@@ -16,7 +16,7 @@ namespace TCI.Presentation.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AuthResponse>> RegisterAsync(

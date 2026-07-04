@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using TCI.Business;
 using TCI.Business.Abstractions.Authentication;
 using TCI.Business.TechnicalServices.Authentication;
@@ -10,11 +11,16 @@ using TCI.DataAccess;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    }); ;
 
 builder.Services.AddDataAccess(builder.Configuration);
 
-builder.Services.AddBusinessLayer();
+builder.Services.AddBusinessLayer(builder.Configuration);
 
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
