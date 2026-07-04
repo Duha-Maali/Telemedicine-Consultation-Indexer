@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import IntEnum
 from uuid import UUID
 
-from sqlalchemy import DateTime, Float, Integer, String
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as PostgreSqlUUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -86,4 +86,82 @@ class Consultation(Base):
         "CompletedAt",
         DateTime(timezone=True),
         nullable=True,
+    )
+
+class TranscriptSegment(Base):
+    __tablename__ = "TranscriptSegments"
+
+    id: Mapped[UUID] = mapped_column(
+        "Id",
+        PostgreSqlUUID(as_uuid=True),
+        primary_key=True,
+    )
+
+    consultation_id: Mapped[UUID] = mapped_column(
+        "ConsultationId",
+        PostgreSqlUUID(as_uuid=True),
+        ForeignKey("Consultations.Id"),
+        nullable=False,
+    )
+
+    sequence_number: Mapped[int] = mapped_column(
+        "SequenceNumber",
+        Integer,
+        nullable=False,
+    )
+
+    start_seconds: Mapped[float] = mapped_column(
+        "StartSeconds",
+        Float,
+        nullable=False,
+    )
+
+    end_seconds: Mapped[float] = mapped_column(
+        "EndSeconds",
+        Float,
+        nullable=False,
+    )
+
+    text: Mapped[str] = mapped_column(
+        "Text",
+        String,
+        nullable=False,
+    )
+    __tablename__ = "TranscriptSegments"
+
+    id: Mapped[UUID] = mapped_column(
+        "Id",
+        PostgreSqlUUID(as_uuid=True),
+        primary_key=True,
+    )
+
+    consultation_id: Mapped[UUID] = mapped_column(
+        "ConsultationId",
+        PostgreSqlUUID(as_uuid=True),
+        ForeignKey("Consultations.Id"),
+        nullable=False,
+    )
+
+    sequence_number: Mapped[int] = mapped_column(
+        "SequenceNumber",
+        Integer,
+        nullable=False,
+    )
+
+    start_seconds: Mapped[float] = mapped_column(
+        "StartSeconds",
+        Float,
+        nullable=False,
+    )
+
+    end_seconds: Mapped[float] = mapped_column(
+        "EndSeconds",
+        Float,
+        nullable=False,
+    )
+
+    text: Mapped[str] = mapped_column(
+        "Text",
+        String,
+        nullable=False,
     )

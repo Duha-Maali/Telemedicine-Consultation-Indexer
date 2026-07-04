@@ -11,6 +11,11 @@ from app.services.consultation_processor import (
     ConsultationProcessor,
 )
 
+from app.database.repositories.transcript_repository import (
+    TranscriptRepository,
+)
+
+from app.processing.video_processor import VideoProcessor
 
 def configure_logging() -> None:
     logging.basicConfig(
@@ -40,11 +45,18 @@ def main() -> int:
             "PostgreSQL connection established successfully."
         )
 
-        repository = ConsultationRepository()
+        consultation_repository = ConsultationRepository()
+        transcript_repository = TranscriptRepository()
+
+        video_processor = VideoProcessor(
+            settings.file_storage_root
+        )
 
         processor = ConsultationProcessor(
             database,
-            repository,
+            consultation_repository,
+            transcript_repository,
+            video_processor,
         )
 
         consumer = RabbitMqConsumer(

@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     database_username: str
     database_password: str
 
+    file_storage_root: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

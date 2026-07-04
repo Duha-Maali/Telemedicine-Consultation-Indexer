@@ -9,6 +9,11 @@ from app.database.repositories.consultation_repository import (
     ConsultationRepository,
 )
 
+from app.database.repositories.transcript_repository import (
+    TranscriptRepository,
+)
+
+from app.processing.video_processor import VideoProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +22,23 @@ class ConsultationProcessor:
     def __init__(
         self,
         database: Database,
-        repository: ConsultationRepository,
+        consultation_repository: ConsultationRepository,
+        transcript_repository: TranscriptRepository,
+        video_processor: VideoProcessor,
     ) -> None:
         self._database = database
-        self._repository = repository
+        self._consultation_repository = (
+            consultation_repository
+        )
+        self._transcript_repository = (
+            transcript_repository
+        )
+        self._video_processor = video_processor
+
 
     def process(self, consultation_id: UUID) -> None:
         with self._database.create_session() as session:
-            consultation = self._repository.get_by_id(
+            consultation = self._consultation_repository.get_by_id(
                 session,
                 consultation_id,
             )
@@ -57,7 +71,9 @@ class ConsultationProcessor:
                 )
                 return
 
-            self._repository.mark_processing(
+            storage_key = consultation.file_path    
+
+            self._consultation_repository.mark_processing(
                 consultation
             )
 
@@ -69,11 +85,33 @@ class ConsultationProcessor:
                 consultation_id,
             )
 
+
         # محاكاة مؤقتة للمعالجة الثقيلة.
-        time.sleep(3)
+        processing_result = self._video_processor.process(
+            storage_key=storage_key,
+            consultation_id=str(consultation_id),
+        )
+
+        mock_segments = [
+            {
+                "start_seconds": 0.0,
+                "end_seconds": 5.0,
+                "text": "Doctor: Hello, how can I help you today?",
+            },
+            {
+                "start_seconds": 5.0,
+                "end_seconds": 11.0,
+                "text": "Patient: I have been experiencing headaches for three days.",
+            },
+            {
+                "start_seconds": 11.0,
+                "end_seconds": 17.0,
+                "text": "Doctor: Are the headaches constant or intermittent?",
+            },
+        ]
 
         with self._database.create_session() as session:
-            consultation = self._repository.get_by_id(
+            consultation = self._consultation_repository.get_by_id(
                 session,
                 consultation_id,
             )
@@ -94,7 +132,25 @@ class ConsultationProcessor:
                 )
                 return
 
-            self._repository.mark_completed(
+            self._consultation_repository.mark_completed(
+                consultation
+            )
+
+            consultation.completed_at = datetime.now(
+                timezone.utc
+            )
+
+            self._transcript_repository.replace_segments(
+                session,
+                consultation_id,
+                mock_segments,
+            )
+
+            consultation.duration_seconds = (
+                processing_result.duration_seconds
+            )
+
+            self._consultation_repository.mark_completed(
                 consultation
             )
 
