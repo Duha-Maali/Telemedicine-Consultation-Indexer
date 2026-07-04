@@ -1,0 +1,70 @@
+import logging
+import sys
+
+from app.config.settings import get_settings
+from app.database.connection import Database
+from app.database.repositories.consultation_repository import (
+    ConsultationRepository,
+)
+from app.messaging.rabbitmq_consumer import RabbitMqConsumer
+from app.services.consultation_processor import (
+    ConsultationProcessor,
+)
+
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format=(
+            "%(asctime)s | %(levelname)s | "
+            "%(name)s | %(message)s"
+        ),
+    )
+
+
+def main() -> int:
+    configure_logging()
+
+    logger = logging.getLogger(__name__)
+    logger.info("Starting TCI Python Worker.")
+
+    database: Database | None = None
+
+    try:
+        settings = get_settings()
+
+        database = Database(settings)
+        database.test_connection()
+
+        logger.info(
+            "PostgreSQL connection established successfully."
+        )
+
+        repository = ConsultationRepository()
+
+        processor = ConsultationProcessor(
+            database,
+            repository,
+        )
+
+        consumer = RabbitMqConsumer(
+            settings,
+            processor,
+        )
+
+        consumer.start()
+        return 0
+
+    except Exception:
+        logger.exception(
+            "Worker stopped because of a fatal error."
+        )
+        return 1
+
+    finally:
+        if database is not None:
+            database.dispose()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
