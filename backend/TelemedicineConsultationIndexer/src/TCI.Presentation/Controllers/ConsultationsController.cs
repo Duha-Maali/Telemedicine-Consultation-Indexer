@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TCI.Business.DTOs.Consultations.Requests;
 using TCI.Business.DTOs.Consultations.Responses;
+using TCI.Business.DTOs.Transcripts.Responses;
 using TCI.Business.Models.Storage;
 using TCI.Business.Services.Implementations;
 using TCI.Business.Services.Interfaces;
@@ -16,9 +17,13 @@ namespace TCI.Presentation.Controllers;
 [ApiController]
 [Authorize]
 public sealed class ConsultationsController(
-    IConsultationService consultationService) : ControllerBase
+    IConsultationService consultationService,
+    ITranscriptService transcriptService)
+    : ControllerBase
 {
     private readonly IConsultationService _consultationService = consultationService;
+
+    private readonly ITranscriptService _transcriptService = transcriptService;
 
     [HttpPost]
     [Consumes("multipart/form-data")]
@@ -120,6 +125,25 @@ public sealed class ConsultationsController(
         var result =  await _consultationService.GetStatusAsync(
             consultationId,
             doctorId,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("{consultationId:guid}/transcript")]
+    [ProducesResponseType(typeof(ConsultationTranscriptResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ConsultationTranscriptResponse>> GetTranscriptAsync(
+        Guid consultationId,
+        CancellationToken cancellationToken)
+    {
+        var doctorId = User.GetDoctorId();
+
+        var result = await _transcriptService.GetByConsultationIdAsync(
+            doctorId,
+            consultationId,
             cancellationToken);
 
         return this.ToActionResult(result);

@@ -22,6 +22,8 @@ public static class DependencyInjection
 
         services.AddScoped<IConsultationService, ConsultationService>();
 
+        services.AddScoped<ITranscriptService, TranscriptService>();
+
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddAutoMapper(configurations =>
