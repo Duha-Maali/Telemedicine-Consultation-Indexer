@@ -20,6 +20,10 @@ class Settings(BaseSettings):
 
     file_storage_root: str
 
+    whisper_model_size: str = "small"
+    whisper_device: str = "cpu"
+    whisper_compute_type: str = "int8"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -15,6 +15,10 @@ from app.database.repositories.transcript_repository import (
 
 from app.processing.video_processor import VideoProcessor
 
+from app.processing.transcription_service import (
+    TranscriptionService,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,15 +29,13 @@ class ConsultationProcessor:
         consultation_repository: ConsultationRepository,
         transcript_repository: TranscriptRepository,
         video_processor: VideoProcessor,
+        transcription_service: TranscriptionService,
     ) -> None:
         self._database = database
-        self._consultation_repository = (
-            consultation_repository
-        )
-        self._transcript_repository = (
-            transcript_repository
-        )
+        self._consultation_repository = consultation_repository
+        self._transcript_repository = transcript_repository
         self._video_processor = video_processor
+        self._transcription_service = transcription_service
 
 
     def process(self, consultation_id: UUID) -> None:
@@ -92,23 +94,12 @@ class ConsultationProcessor:
             consultation_id=str(consultation_id),
         )
 
-        mock_segments = [
-            {
-                "start_seconds": 0.0,
-                "end_seconds": 5.0,
-                "text": "Doctor: Hello, how can I help you today?",
-            },
-            {
-                "start_seconds": 5.0,
-                "end_seconds": 11.0,
-                "text": "Patient: I have been experiencing headaches for three days.",
-            },
-            {
-                "start_seconds": 11.0,
-                "end_seconds": 17.0,
-                "text": "Doctor: Are the headaches constant or intermittent?",
-            },
-        ]
+        transcription_result = (
+            self._transcription_service.transcribe(
+                processing_result.audio_file_path
+            )
+        )
+
 
         with self._database.create_session() as session:
             consultation = self._consultation_repository.get_by_id(
@@ -143,7 +134,7 @@ class ConsultationProcessor:
             self._transcript_repository.replace_segments(
                 session,
                 consultation_id,
-                mock_segments,
+                transcription_result.segments,
             )
 
             consultation.duration_seconds = (

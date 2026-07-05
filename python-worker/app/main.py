@@ -17,6 +17,10 @@ from app.database.repositories.transcript_repository import (
 
 from app.processing.video_processor import VideoProcessor
 
+from app.processing.transcription_service import (
+    TranscriptionService,
+)
+
 def configure_logging() -> None:
     logging.basicConfig(
         level=logging.INFO,
@@ -52,11 +56,18 @@ def main() -> int:
             settings.file_storage_root
         )
 
+        transcription_service = TranscriptionService(
+            model_size=settings.whisper_model_size,
+            device=settings.whisper_device,
+            compute_type=settings.whisper_compute_type,
+        )
+
         processor = ConsultationProcessor(
             database,
             consultation_repository,
             transcript_repository,
             video_processor,
+            transcription_service,
         )
 
         consumer = RabbitMqConsumer(

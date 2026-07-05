@@ -3,35 +3,36 @@ from uuid import UUID, uuid4
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from app.database.models import TranscriptSegment
+from app.database.models import (
+    TranscriptSegment as TranscriptSegmentEntity,
+)
 
+from app.processing.transcription_result import (
+    TranscriptionSegment,
+)
 
 class TranscriptRepository:
     def replace_segments(
         self,
         session: Session,
         consultation_id: UUID,
-        segments: list[dict[str, float | str]],
+        segments: list[TranscriptionSegment],
     ) -> None:
         session.execute(
-            delete(TranscriptSegment).where(
-                TranscriptSegment.consultation_id
+            delete(TranscriptSegmentEntity).where(
+                TranscriptSegmentEntity.consultation_id
                 == consultation_id
             )
         )
 
         transcript_segments = [
-            TranscriptSegment(
+            TranscriptSegmentEntity(
                 id=uuid4(),
                 consultation_id=consultation_id,
                 sequence_number=index + 1,
-                start_seconds=float(
-                    segment["start_seconds"]
-                ),
-                end_seconds=float(
-                    segment["end_seconds"]
-                ),
-                text=str(segment["text"]),
+                start_seconds=segment.start_seconds,
+                end_seconds=segment.end_seconds,
+                text=segment.text,
             )
             for index, segment in enumerate(segments)
         ]
