@@ -1,6 +1,7 @@
 import logging
 import subprocess
 from pathlib import Path
+import shutil
 
 from app.processing.video_processing_result import (
     VideoProcessingResult,
@@ -195,3 +196,35 @@ class VideoProcessor:
             raise RuntimeError(
                 f"Media processing failed: {error_output}"
             ) from exception
+
+
+    def cleanup_processed_files(
+        self,
+        consultation_id: str,
+    ) -> None:
+        processed_directory = (
+            self._storage_root
+            / "processed"
+            / consultation_id
+        )
+
+
+        if not processed_directory.exists():
+            return
+
+        try:
+            shutil.rmtree(processed_directory)
+
+            logger.info(
+                "Temporary processed files deleted. "
+                "ConsultationId=%s Directory=%s",
+                consultation_id,
+                processed_directory,
+            )
+        except OSError:
+            logger.exception(
+                "Failed to delete temporary processed files. "
+                "ConsultationId=%s Directory=%s",
+                consultation_id,
+                processed_directory,
+            )

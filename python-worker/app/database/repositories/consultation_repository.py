@@ -27,3 +27,11 @@ class ConsultationRepository:
         consultation: Consultation,
     ) -> None:
         consultation.status = ConsultationStatus.COMPLETED
+
+    def mark_failed(
+        self,
+        consultation: Consultation,
+    ) -> None:
+        consultation.status = ConsultationStatus.FAILED
+        consultation.completed_at = None
+

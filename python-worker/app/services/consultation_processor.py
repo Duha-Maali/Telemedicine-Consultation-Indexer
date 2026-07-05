@@ -5,6 +5,15 @@ from uuid import UUID
 
 from app.database.connection import Database
 from app.database.models import ConsultationStatus
+
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.common.exceptions import (
+    ConsultationNotFoundError,
+    ConsultationProcessingError,
+    ConsultationProcessingSkipped,
+)
+
 from app.database.repositories.consultation_repository import (
     ConsultationRepository,
 )
@@ -37,8 +46,83 @@ class ConsultationProcessor:
         self._video_processor = video_processor
         self._transcription_service = transcription_service
 
+    
+    def process(
+        self,
+        consultation_id: UUID,
+    ) -> None:
+        consultation_id_text = str(consultation_id)
 
-    def process(self, consultation_id: UUID) -> None:
+        try:
+            storage_key = self._start_processing(
+                consultation_id
+            )
+
+            processing_result = self._video_processor.process(
+                storage_key=storage_key,
+                consultation_id=consultation_id_text,
+            )
+
+            transcription_result = (
+                self._transcription_service.transcribe(
+                    processing_result.audio_file_path
+                )
+            )
+
+            self._complete_processing(
+                consultation_id=consultation_id,
+                duration_seconds=(
+                    processing_result.duration_seconds
+                ),
+                segments=transcription_result.segments,
+            )
+
+        except ConsultationNotFoundError:
+            raise
+
+        except ConsultationNotFoundError:
+            raise
+        
+        except ConsultationProcessingSkipped:
+            raise
+
+        except SQLAlchemyError:
+            logger.exception(
+                "Database error while processing consultation. "
+                "ConsultationId=%s",
+                consultation_id,
+            )
+            raise
+
+        except Exception as exception:
+            logger.exception(
+                "Consultation processing failed. "
+                "ConsultationId=%s",
+                consultation_id,
+            )
+
+            try:
+                self._mark_failed(consultation_id)
+            except SQLAlchemyError:
+                logger.exception(
+                    "Failed to update consultation status to Failed. "
+                    "ConsultationId=%s",
+                    consultation_id,
+                )
+                raise
+
+            raise ConsultationProcessingError(
+                f"Consultation '{consultation_id}' processing failed."
+            ) from exception
+
+        finally:
+            self._video_processor.cleanup_processed_files(
+                consultation_id_text
+            )
+    
+
+
+    def _start_processing(self, consultation_id: UUID) -> str:
         with self._database.create_session() as session:
             consultation = self._consultation_repository.get_by_id(
                 session,
@@ -46,8 +130,9 @@ class ConsultationProcessor:
             )
 
             if consultation is None:
-                raise ValueError(
-                    f"Consultation '{consultation_id}' was not found."
+                raise ConsultationNotFoundError(
+                f"Consultation '{consultation_id}' "
+                "was not found."
                 )
 
             if (
@@ -60,7 +145,7 @@ class ConsultationProcessor:
                     "ConsultationId=%s",
                     consultation_id,
                 )
-                return
+                raise ConsultationProcessingSkipped()
 
             if (
                 consultation.status
@@ -71,7 +156,7 @@ class ConsultationProcessor:
                     "Skipping processing. ConsultationId=%s",
                     consultation_id,
                 )
-                return
+                raise ConsultationProcessingSkipped()
 
             storage_key = consultation.file_path    
 
@@ -87,29 +172,26 @@ class ConsultationProcessor:
                 consultation_id,
             )
 
+            return storage_key
 
-        # محاكاة مؤقتة للمعالجة الثقيلة.
-        processing_result = self._video_processor.process(
-            storage_key=storage_key,
-            consultation_id=str(consultation_id),
-        )
-
-        transcription_result = (
-            self._transcription_service.transcribe(
-                processing_result.audio_file_path
-            )
-        )
-
-
+    def _complete_processing(
+        self,
+        consultation_id: UUID,
+        duration_seconds: float,
+        segments,
+    ) -> None:
         with self._database.create_session() as session:
-            consultation = self._consultation_repository.get_by_id(
-                session,
-                consultation_id,
+            consultation = (
+                self._consultation_repository.get_by_id(
+                    session,
+                    consultation_id,
+                )
             )
 
             if consultation is None:
-                raise ValueError(
-                    f"Consultation '{consultation_id}' was not found."
+                raise ConsultationNotFoundError(
+                    f"Consultation '{consultation_id}' "
+                    "was not found."
                 )
 
             if (
@@ -123,22 +205,14 @@ class ConsultationProcessor:
                 )
                 return
 
-            self._consultation_repository.mark_completed(
-                consultation
-            )
-
-            consultation.completed_at = datetime.now(
-                timezone.utc
-            )
-
             self._transcript_repository.replace_segments(
                 session,
                 consultation_id,
-                transcription_result.segments,
+                segments,
             )
 
             consultation.duration_seconds = (
-                processing_result.duration_seconds
+                duration_seconds
             )
 
             self._consultation_repository.mark_completed(
@@ -153,6 +227,39 @@ class ConsultationProcessor:
 
             logger.info(
                 "Consultation status changed to Completed. "
+                "ConsultationId=%s",
+                consultation_id,
+            )
+
+    def _mark_failed(
+        self,
+        consultation_id: UUID,
+    ) -> None:
+        with self._database.create_session() as session:
+            consultation = (
+                self._consultation_repository.get_by_id(
+                    session,
+                    consultation_id,
+                )
+            )
+
+            if consultation is None:
+                return
+
+            if (
+                consultation.status
+                == ConsultationStatus.DELETION_REQUESTED
+            ):
+                return
+
+            self._consultation_repository.mark_failed(
+                consultation
+            )
+
+            session.commit()
+
+            logger.info(
+                "Consultation status changed to Failed. "
                 "ConsultationId=%s",
                 consultation_id,
             )

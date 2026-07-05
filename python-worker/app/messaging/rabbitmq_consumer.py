@@ -14,6 +14,12 @@ from app.services.consultation_processor import (
     ConsultationProcessor,
 )
 
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.common.exceptions import (
+    ConsultationNotFoundError,
+    ConsultationProcessingError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +107,14 @@ class RabbitMqConsumer:
         body: bytes,
     ) -> None:
         try:
-            payload = json.loads(body.decode("utf-8"))
+            payload = json.loads(
+                body.decode("utf-8")
+            )
 
-            message = ProcessConsultationMessage.model_validate(
-                payload
+            message = (
+                ProcessConsultationMessage.model_validate(
+                    payload
+                )
             )
 
             logger.info(
@@ -113,9 +123,6 @@ class RabbitMqConsumer:
                 message.consultation_id,
                 properties.message_id,
             )
-
-            # مؤقتًا فقط لإثبات أن الرسالة وصلت.
-            # لاحقًا سنستدعي ConsultationProcessor هنا.
 
             self._consultation_processor.process(
                 message.consultation_id
@@ -146,9 +153,40 @@ class RabbitMqConsumer:
                 requeue=False,
             )
 
+        except ConsultationNotFoundError:
+            logger.warning(
+                "Consultation does not exist. "
+                "The message will be acknowledged."
+            )
+
+            channel.basic_ack(
+                delivery_tag=method.delivery_tag
+            )
+
+        except ConsultationProcessingError:
+            logger.error(
+                "Consultation processing failed permanently. "
+                "The message will be acknowledged."
+            )
+
+            channel.basic_ack(
+                delivery_tag=method.delivery_tag
+            )
+
+        except SQLAlchemyError:
+            logger.exception(
+                "Database error while processing message. "
+                "The message will be requeued."
+            )
+
+            channel.basic_nack(
+                delivery_tag=method.delivery_tag,
+                requeue=True,
+            )
+
         except Exception:
             logger.exception(
-                "Unexpected error while processing message. "
+                "Unexpected infrastructure error. "
                 "The message will be requeued."
             )
 
