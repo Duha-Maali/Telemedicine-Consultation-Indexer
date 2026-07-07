@@ -48,4 +48,11 @@ public class ConsultationRepository(AppDbContext context) : IConsultationReposit
     {
         await _context.Consultations.AddAsync(consultation, cancellationToken);
     }
+
+    public void Delete(Consultation consultation)
+    {
+        ArgumentNullException.ThrowIfNull(consultation);
+
+        _context.Consultations.Remove(consultation);
+    }
 }
