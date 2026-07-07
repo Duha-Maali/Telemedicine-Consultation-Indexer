@@ -163,7 +163,7 @@ class ConsultationProcessor:
             self._consultation_repository.mark_processing(
                 consultation
             )
-
+ 
             session.commit()
 
             logger.info(

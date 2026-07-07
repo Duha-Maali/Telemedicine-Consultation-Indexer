@@ -19,6 +19,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.common.exceptions import (
     ConsultationNotFoundError,
     ConsultationProcessingError,
+    ConsultationProcessingSkipped,
 )
 
 logger = logging.getLogger(__name__)
@@ -156,6 +157,16 @@ class RabbitMqConsumer:
         except ConsultationNotFoundError:
             logger.warning(
                 "Consultation does not exist. "
+                "The message will be acknowledged."
+            )
+
+            channel.basic_ack(
+                delivery_tag=method.delivery_tag
+            )
+
+        except ConsultationProcessingSkipped:
+            logger.info(
+                "Consultation processing was skipped. "
                 "The message will be acknowledged."
             )
 
