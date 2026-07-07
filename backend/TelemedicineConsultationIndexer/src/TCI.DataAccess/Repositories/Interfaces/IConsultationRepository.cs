@@ -21,4 +21,6 @@ public interface IConsultationRepository
         );
 
     Task AddAsync(Consultation consultation, CancellationToken cancellationToken = default);
+
+    void Delete(Consultation consultation);
 }

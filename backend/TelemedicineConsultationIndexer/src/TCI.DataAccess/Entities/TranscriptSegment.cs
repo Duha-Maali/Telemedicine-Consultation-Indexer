@@ -1,4 +1,6 @@
-﻿namespace TCI.DataAccess.Entities;
+﻿using NpgsqlTypes;
+
+namespace TCI.DataAccess.Entities;
 
 public class TranscriptSegment
 {
