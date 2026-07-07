@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using TCI.Business.Abstractions.Authentication;
 using TCI.Business.Common.Errors;
 using TCI.Business.Common.Extensions;
@@ -20,7 +21,8 @@ public sealed class AuthService(
     ITokenGenerator tokenGenerator,
     IValidator<RegisterDoctorRequest> registerValidator,
     IValidator<LoginRequest> loginValidator,
-    IMapper mapper) 
+    IMapper mapper,
+    ILogger<AuthService> logger) 
     : IAuthService
 {
     private readonly IDoctorRepository _doctorRepository = doctorRepository;
@@ -37,6 +39,8 @@ public sealed class AuthService(
 
     private readonly IMapper _mapper = mapper;
 
+    private readonly ILogger<AuthService> _logger = logger;
+
     public async Task<Result<AuthResponse>> RegisterAsync(
         RegisterDoctorRequest request, 
         CancellationToken cancellationToken = default)
@@ -48,6 +52,10 @@ public sealed class AuthService(
 
         if (!validationResult.IsValid)
         {
+            _logger.LogWarning(
+                "Doctor registration rejected because the request is invalid. ErrorCount={ErrorCount}.",
+                validationResult.Errors.Count);
+
             return Result<AuthResponse>.Failure(
                 validationResult.ToValidationError());
         }
@@ -59,6 +67,9 @@ public sealed class AuthService(
 
         if(emailExists) 
         {
+            _logger.LogWarning(
+                "Doctor registration rejected because the email already exists.");
+
             return Result<AuthResponse>.Failure(
                 AuthErrors.EmailAlreadyExists);
         }
@@ -79,6 +90,10 @@ public sealed class AuthService(
             cancellationToken);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Doctor {DoctorId} registered successfully.",
+            doctor.Id);
 
         var tokenResult = _tokenGenerator.Generate(doctor);
 
@@ -104,6 +119,10 @@ public sealed class AuthService(
 
         if (!validationResult.IsValid)
         {
+            _logger.LogWarning(
+                "Doctor login rejected because the request is invalid. ErrorCount={ErrorCount}.",
+                validationResult.Errors.Count);
+
             return Result<AuthResponse>.Failure(
                 validationResult.ToValidationError());
         }
@@ -114,6 +133,9 @@ public sealed class AuthService(
 
         if (doctor is null)
         {
+            _logger.LogWarning(
+                "Doctor login failed because the credentials are invalid.");
+
             return Result<AuthResponse>.Failure(
                 AuthErrors.InvalidCredentials);
         }
@@ -124,9 +146,17 @@ public sealed class AuthService(
 
         if (!passwordIsValid)
         {
+            _logger.LogWarning(
+               "Doctor {DoctorId} login failed because the credentials are invalid.",
+               doctor.Id);
+
             return Result<AuthResponse>.Failure(
                 AuthErrors.InvalidCredentials);
         }
+
+        _logger.LogInformation(
+           "Doctor {DoctorId} logged in successfully.",
+           doctor.Id);
 
         var tokenResult = _tokenGenerator.Generate(doctor);
 

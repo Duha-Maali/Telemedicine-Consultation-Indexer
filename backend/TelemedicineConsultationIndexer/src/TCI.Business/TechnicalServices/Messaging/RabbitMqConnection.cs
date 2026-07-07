@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 namespace TCI.Business.TechnicalServices.Messaging;
@@ -6,14 +7,21 @@ namespace TCI.Business.TechnicalServices.Messaging;
 public sealed class RabbitMqConnection : IRabbitMqConnection
 {
     private readonly ConnectionFactory _connectionFactory;
+    private readonly ILogger<RabbitMqConnection> _logger;
     private readonly SemaphoreSlim _connectionLock = new(1, 1);
 
     private IConnection? _connection;
     private bool _disposed;
 
-    public RabbitMqConnection(IOptions<RabbitMqSettings> options)
+    public RabbitMqConnection(
+        IOptions<RabbitMqSettings> options,
+        ILogger<RabbitMqConnection> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _logger = logger;
+
 
         var settings = options.Value;
 
@@ -63,9 +71,31 @@ public sealed class RabbitMqConnection : IRabbitMqConnection
                 _connection = null;
             }
 
-            _connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
+            _logger.LogInformation(
+                "Opening RabbitMQ connection to {HostName}:{Port} using virtual host {VirtualHost}.",
+                _connectionFactory.HostName,
+                _connectionFactory.Port,
+                _connectionFactory.VirtualHost);
 
-            return _connection;
+            try
+            {
+                _connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
+
+                _logger.LogInformation(
+                    "RabbitMQ connection opened successfully.");
+
+                return _connection;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(
+                    exception,
+                    "Failed to open RabbitMQ connection to {HostName}:{Port}.",
+                    _connectionFactory.HostName,
+                    _connectionFactory.Port);
+
+                throw;
+            }
         }
         finally
         {
