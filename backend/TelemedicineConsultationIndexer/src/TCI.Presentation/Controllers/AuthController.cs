@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TCI.Business.DTOs.Auth.Requests;
 using TCI.Business.DTOs.Auth.Responses;
 using TCI.Business.Services.Interfaces;
@@ -39,6 +40,7 @@ namespace TCI.Presentation.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
+        [EnableRateLimiting("AuthPolicy")]
         [ProducesResponseType(
         typeof(AuthResponse),
         StatusCodes.Status200OK)]

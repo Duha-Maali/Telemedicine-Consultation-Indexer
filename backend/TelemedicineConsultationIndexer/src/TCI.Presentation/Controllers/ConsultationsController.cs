@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TCI.Business.DTOs.Consultations.Requests;
 using TCI.Business.DTOs.Consultations.Responses;
 using TCI.Business.DTOs.Transcripts.Responses;
@@ -27,6 +28,7 @@ public sealed class ConsultationsController(
 
     [HttpPost]
     [Consumes("multipart/form-data")]
+    [EnableRateLimiting("UploadPolicy")]
     [RequestSizeLimit(1_073_741_824)]
     [ProducesResponseType(typeof(CreateConsultationResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -74,6 +76,7 @@ public sealed class ConsultationsController(
     }
 
     [HttpGet]
+    [EnableRateLimiting("GeneralPolicy")]
     [ProducesResponseType(
         typeof(IReadOnlyList<ConsultationListItemResponse>),
         StatusCodes.Status200OK)]
@@ -91,6 +94,7 @@ public sealed class ConsultationsController(
     }
 
     [HttpGet("{consultationId:guid}")]
+    [EnableRateLimiting("GeneralPolicy")]
     [ProducesResponseType(
         typeof(ConsultationDetailsResponse),
         StatusCodes.Status200OK)]
@@ -111,6 +115,7 @@ public sealed class ConsultationsController(
     }
 
     [HttpGet("{consultationId:guid}/status")]
+    [EnableRateLimiting("GeneralPolicy")]
     [ProducesResponseType(
         typeof(ConsultationStatusResponse),
         StatusCodes.Status200OK)]
@@ -131,6 +136,7 @@ public sealed class ConsultationsController(
     }
 
     [HttpGet("{consultationId:guid}/transcript")]
+    [EnableRateLimiting("GeneralPolicy")]
     [ProducesResponseType(typeof(ConsultationTranscriptResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -145,6 +151,50 @@ public sealed class ConsultationsController(
             doctorId,
             consultationId,
             cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpDelete("{consultationId:guid}")]
+    [EnableRateLimiting("GeneralPolicy")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> DeleteAsync(
+        Guid consultationId,
+        CancellationToken cancellationToken)
+    {
+        var doctorId = User.GetDoctorId();
+
+        var result = await _consultationService.DeleteAsync(
+            doctorId,
+            consultationId,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpGet("{consultationId:guid}/transcript/search")]
+    [EnableRateLimiting("SearchPolicy")]
+    [ProducesResponseType(
+    typeof(IReadOnlyList<TranscriptSegmentResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<IReadOnlyList<TranscriptSegmentResponse>>> SearchTranscriptAsync(
+        Guid consultationId,
+        [FromQuery] string query,
+        CancellationToken cancellationToken)
+    {
+        var doctorId = User.GetDoctorId();
+
+        var result = await _transcriptService.SearchAsync(
+                doctorId,
+                consultationId,
+                query,
+                cancellationToken);
 
         return this.ToActionResult(result);
     }

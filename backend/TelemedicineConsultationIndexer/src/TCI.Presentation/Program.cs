@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using TCI.Business;
 using TCI.Business.Abstractions.Authentication;
 using TCI.Business.TechnicalServices.Authentication;
@@ -107,16 +111,119 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Telemedicine Consultation Indexer API",
+        Version = "v1",
+        Description = "API for uploading telemedicine consultations, processing transcripts, and searching consultation segments."
+    });
+
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Enter the JWT token only. Do not write 'Bearer' before it."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("bearer", document)] = []
+    });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        var retryAfterSeconds = 60;
+
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            retryAfterSeconds = Math.Max(1, (int)retryAfter.TotalSeconds);
+        }
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.Headers.RetryAfter =
+            retryAfterSeconds.ToString(NumberFormatInfo.InvariantInfo);
+
+        var logger = context.HttpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("RateLimiting");
+
+        var userId = context.HttpContext.User.FindFirst("doctorId")?.Value
+            ?? context.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? "anonymous";
+
+        logger.LogWarning(
+            "Rate limit exceeded. Path={Path}, Method={Method}, UserId={UserId}, RemoteIp={RemoteIp}, RetryAfterSeconds={RetryAfterSeconds}",
+            context.HttpContext.Request.Path,
+            context.HttpContext.Request.Method,
+            userId,
+            context.HttpContext.Connection.RemoteIpAddress?.ToString(),
+            retryAfterSeconds);
+
+        context.HttpContext.Response.ContentType = "application/json";
+
+        await context.HttpContext.Response.WriteAsync($$"""
+        {
+          "type": "https://telemedicine-indexer/errors/rate-limit-exceeded",
+          "code": "RATE_LIMIT_EXCEEDED",
+          "title": "Too many requests",
+          "status": 429,
+          "detail": "Rate limit exceeded. Please try again later.",
+          "retryAfterSeconds": {{retryAfterSeconds}}
+        }
+        """, cancellationToken);
+    };
+
+    options.AddSlidingWindowLimiter("GeneralPolicy", limiterOptions =>
+    {
+        ConfigureSlidingWindowLimiter(limiterOptions, rateLimitingOptions.General);
+    });
+
+    options.AddSlidingWindowLimiter("AuthPolicy", limiterOptions =>
+    {
+        ConfigureSlidingWindowLimiter(limiterOptions, rateLimitingOptions.Auth);
+    });
+
+    options.AddSlidingWindowLimiter("UploadPolicy", limiterOptions =>
+    {
+        ConfigureSlidingWindowLimiter(limiterOptions, rateLimitingOptions.Upload);
+    });
+
+    options.AddSlidingWindowLimiter("SearchPolicy", limiterOptions =>
+    {
+        ConfigureSlidingWindowLimiter(limiterOptions, rateLimitingOptions.Search);
+    });
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/swagger/v1/swagger.json",
+            "Telemedicine Consultation Indexer API v1");
+
+        options.RoutePrefix = "swagger";
+    });
 }
+
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
@@ -124,6 +231,18 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseRateLimiter();
+
 app.MapControllers();
 
 app.Run();
+
+static void ConfigureSlidingWindowLimiter(
+    SlidingWindowRateLimiterOptions limiterOptions,
+    RateLimitPolicyOptions policy)
+{
+    limiterOptions.PermitLimit = policy.PermitLimit;
+    limiterOptions.Window = TimeSpan.FromMinutes(policy.WindowInMinutes);
+    limiterOptions.SegmentsPerWindow = policy.SegmentsPerWindow;
+    limiterOptions.QueueLimit = 0;
+}

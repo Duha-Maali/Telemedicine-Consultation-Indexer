@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TCI.Business.DTOs.Doctors.Responses;
 using TCI.Business.Services.Interfaces;
 using TCI.Presentation.Extensions;
@@ -16,6 +17,7 @@ namespace TCI.Presentation.Controllers
         private readonly IDoctorService _doctorService = doctorService;
 
         [HttpGet("me")]
+        [EnableRateLimiting("GeneralPolicy")]
         [ProducesResponseType(typeof(DoctorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
