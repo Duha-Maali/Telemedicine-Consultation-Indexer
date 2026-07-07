@@ -6,10 +6,31 @@ using TCI.Business;
 using TCI.Business.Abstractions.Authentication;
 using TCI.Business.TechnicalServices.Authentication;
 using TCI.DataAccess;
+using TCI.Presentation.Middleware;
+using TCI.Presentation.Options;
 
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+
+builder.Logging.ClearProviders();
+
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+
+builder.Logging.AddJsonConsole(options =>
+{
+    options.IncludeScopes = true;
+    options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+    options.UseUtcTimestamp = true;
+});
+
+builder.Services.Configure<RateLimitingOptions>(
+    builder.Configuration.GetSection(RateLimitingOptions.SectionName));
+
+var rateLimitingOptions = builder.Configuration
+    .GetSection(RateLimitingOptions.SectionName)
+    .Get<RateLimitingOptions>()
+    ?? new RateLimitingOptions();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -17,6 +38,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(
             new JsonStringEnumConverter());
     }); ;
+
+builder.Services.AddProblemDetails();
 
 builder.Services.AddDataAccess(builder.Configuration);
 

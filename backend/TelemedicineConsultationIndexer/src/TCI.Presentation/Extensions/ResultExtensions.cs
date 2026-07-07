@@ -14,32 +14,85 @@ public static class ResultExtensions
             return controller.Ok(result.Value);
         }
 
-        return result.Error.Type switch
+        return MapError<T>(
+            controller,
+            result.Error);
+    }
+
+    public static IActionResult ToActionResult(
+        this ControllerBase controller,
+        Result result)
+    {
+        if (result.IsSuccess)
+        {
+            return controller.NoContent();
+        }
+
+        return MapError(
+            controller,
+            result.Error);
+    }
+
+    private static ActionResult<T> MapError<T>(
+        ControllerBase controller,
+        Error error)
+    {
+        return error.Type switch
         {
             ErrorType.Validation =>
                 controller.BadRequest(
-                    CreateErrorResponse(result.Error)),
+                    CreateErrorResponse(error)),
 
             ErrorType.Unauthorized =>
                 controller.Unauthorized(
-                    CreateErrorResponse(result.Error)),
+                    CreateErrorResponse(error)),
 
             ErrorType.NotFound =>
                 controller.NotFound(
-                    CreateErrorResponse(result.Error)),
+                    CreateErrorResponse(error)),
 
             ErrorType.Conflict =>
                 controller.Conflict(
-                    CreateErrorResponse(result.Error)),
+                    CreateErrorResponse(error)),
 
             _ =>
                 controller.StatusCode(
                     StatusCodes.Status500InternalServerError,
-                    CreateErrorResponse(result.Error))
+                    CreateErrorResponse(error))
         };
     }
 
-    private static object CreateErrorResponse(Error error)
+    private static IActionResult MapError(
+        ControllerBase controller,
+        Error error)
+    {
+        return error.Type switch
+        {
+            ErrorType.Validation =>
+                controller.BadRequest(
+                    CreateErrorResponse(error)),
+
+            ErrorType.Unauthorized =>
+                controller.Unauthorized(
+                    CreateErrorResponse(error)),
+
+            ErrorType.NotFound =>
+                controller.NotFound(
+                    CreateErrorResponse(error)),
+
+            ErrorType.Conflict =>
+                controller.Conflict(
+                    CreateErrorResponse(error)),
+
+            _ =>
+                controller.StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    CreateErrorResponse(error))
+        };
+    }
+
+    private static object CreateErrorResponse(
+        Error error)
     {
         if (error is ValidationError validationError)
         {
