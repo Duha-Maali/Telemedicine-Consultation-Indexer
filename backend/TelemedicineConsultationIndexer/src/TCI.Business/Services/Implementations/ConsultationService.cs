@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using TCI.Business.Abstractions.Messaging;
 using TCI.Business.Abstractions.Storage;
 using TCI.Business.Common.Errors;
@@ -22,7 +23,8 @@ public sealed class ConsultationService(
     IFileStorageService fileStorageService,
     IConsultationMessagePublisher messagePublisher,
     IValidator<CreateConsultationRequest> createValidator,
-    IMapper mapper) : IConsultationService
+    IMapper mapper,
+    ILogger<ConsultationService> logger) : IConsultationService
 {
     private readonly IConsultationRepository _consultationRepository = consultationRepository;
 
@@ -36,6 +38,8 @@ public sealed class ConsultationService(
 
     private readonly IMapper _mapper = mapper;
 
+    private readonly ILogger<ConsultationService> _logger = logger;
+
     public async Task<Result<CreateConsultationResponse>> CreateAsync(
         Guid doctorId, 
         CreateConsultationRequest request, 
@@ -47,8 +51,19 @@ public sealed class ConsultationService(
 
         if(!validationResult.IsValid)
         {
+            _logger.LogWarning(
+                "Consultation creation rejected for doctor {DoctorId}. ErrorCount={ErrorCount}.",
+                doctorId,
+                validationResult.Errors.Count);
+
             return Result<CreateConsultationResponse>.Failure(validationResult.ToValidationError());
         }
+
+        _logger.LogInformation(
+            "Creating consultation upload for doctor {DoctorId}. FileLength={FileLength} bytes, ContentType={ContentType}.",
+            doctorId,
+            request.Video.Length,
+            request.Video.ContentType);
 
         var storedFile = await _fileStorageService.SaveAsync(
             request.Video,
@@ -77,8 +92,14 @@ public sealed class ConsultationService(
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
-        catch
+        catch(Exception exception)
         {
+            _logger.LogError(
+               exception,
+               "Failed to save consultation metadata for doctor {DoctorId}. StoredFilePath={StoredFilePath}.",
+               doctorId,
+               storedFile.FilePath);
+
             await TryDeleteStoredFileAsync(storedFile.FilePath);
 
             throw;
@@ -92,10 +113,19 @@ public sealed class ConsultationService(
                     message,
                     cancellationToken);
         }
-        catch
+        catch(Exception exception)
         {
+            _logger.LogError(
+               exception,
+               "Failed to publish processing request for consultation {ConsultationId}.",
+               consultation.Id);
+
             return Result<CreateConsultationResponse>.Failure(ConsultationErrors.MessagePublishingFailed);
         }
+
+        _logger.LogInformation(
+            "Consultation {ConsultationId} created and queued for processing.",
+            consultation.Id);
 
         var response = _mapper.Map<CreateConsultationResponse>(consultation);
 
@@ -109,6 +139,11 @@ public sealed class ConsultationService(
         var consultations = await _consultationRepository.GetAllForDoctorAsync(
             doctorId,
             cancellationToken);
+
+        _logger.LogDebug(
+            "Loaded consultations for doctor {DoctorId}. Count={Count}.",
+            doctorId,
+            consultations.Count);
 
         var response = _mapper.Map<IReadOnlyList<ConsultationListItemResponse>>(consultations);
 
@@ -127,8 +162,19 @@ public sealed class ConsultationService(
 
         if (consultation is null)
         {
+            _logger.LogWarning(
+                "Consultation {ConsultationId} was not found for doctor {DoctorId}.",
+                consultationId,
+                doctorId);
+
             return Result<ConsultationDetailsResponse>.Failure(ConsultationErrors.NotFound);
         }
+
+        _logger.LogDebug(
+            "Loaded consultation {ConsultationId} for doctor {DoctorId}. Status={Status}.",
+            consultationId,
+            doctorId,
+            consultation.Status); 
 
         var response = _mapper.Map<ConsultationDetailsResponse>(consultation);
 
@@ -147,12 +193,67 @@ public sealed class ConsultationService(
 
         if (consultation is null)
         {
+            _logger.LogWarning(
+                "Consultation status requested, but consultation {ConsultationId} was not found for doctor {DoctorId}.",
+                consultationId,
+                doctorId);
+
             return Result<ConsultationStatusResponse>.Failure(ConsultationErrors.NotFound);
         }
+
+        _logger.LogDebug(
+            "Consultation {ConsultationId} status checked. Status={Status}.",
+            consultationId,
+            consultation.Status);
 
         var response = _mapper.Map<ConsultationStatusResponse>(consultation);
 
         return Result<ConsultationStatusResponse>.Success(response);
+    }
+
+    public async Task<Result> DeleteAsync(
+        Guid doctorId,
+        Guid consultationId,
+        CancellationToken cancellationToken = default)
+    {
+        var consultation = await _consultationRepository.GetByIdForDoctorAsync(
+            consultationId,
+            doctorId,
+            cancellationToken);
+
+        if (consultation is null)
+        {
+            _logger.LogWarning(
+                "Consultation {ConsultationId} delete requested, but it was not found for doctor {DoctorId}.",
+                consultationId,
+                doctorId);
+
+            return Result.Failure(ConsultationErrors.NotFound);
+        }
+
+        if (consultation.Status == ConsultationStatus.Processing)
+        {
+            _logger.LogWarning(
+                "Consultation {ConsultationId} delete rejected because it is currently processing.",
+                consultationId);
+
+            return Result.Failure(ConsultationErrors.CannotDeleteWhileProcessing);
+        }
+
+        var storedFilePath = consultation.FilePath;
+
+        _consultationRepository.Delete(consultation);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await TryDeleteStoredFileAsync(storedFilePath);
+
+        _logger.LogInformation(
+            "Consultation {ConsultationId} deleted successfully by doctor {DoctorId}.",
+            consultationId,
+            doctorId);
+
+        return Result.Success();
     }
 
     private async Task TryDeleteStoredFileAsync(string filePath)
@@ -163,8 +264,12 @@ public sealed class ConsultationService(
                 filePath,
                 CancellationToken.None);
         }
-        catch
-        { 
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                exception,
+                "Failed to delete stored consultation file {FilePath}.",
+                filePath);
         }
     }
 }

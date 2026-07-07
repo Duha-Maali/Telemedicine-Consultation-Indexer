@@ -25,4 +25,9 @@ public interface IConsultationService
         Guid consultationId,
         Guid doctorId,
         CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteAsync(
+        Guid doctorId,
+        Guid consultationId,
+        CancellationToken cancellationToken = default);
 }

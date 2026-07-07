@@ -9,4 +9,10 @@ public interface ITranscriptService
             Guid doctorId,
             Guid consultationId,
             CancellationToken cancellationToken = default);
+
+    Task<Result<IReadOnlyList<TranscriptSegmentResponse>>> SearchAsync(
+        Guid doctorId,
+        Guid consultationId,
+        string query,
+        CancellationToken cancellationToken = default);
 }

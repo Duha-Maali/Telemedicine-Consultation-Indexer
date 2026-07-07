@@ -28,4 +28,14 @@ public static class ConsultationErrors
         "Consultation.TranscriptNotReady",
         "The consultation transcript is not ready yet.",
         ErrorType.Conflict);
+
+    public static readonly Error EmptySearchQuery = new(
+        "Transcript.EmptySearchQuery",
+        "Search query cannot be empty.",
+        ErrorType.Validation);
+
+    public static readonly Error CannotDeleteWhileProcessing = new(
+        "Consultation.CannotDeleteWhileProcessing",
+        "The consultation cannot be deleted while it is being processed.",
+        ErrorType.Conflict);
 }
