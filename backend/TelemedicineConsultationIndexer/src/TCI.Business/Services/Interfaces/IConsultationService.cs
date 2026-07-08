@@ -30,4 +30,9 @@ public interface IConsultationService
         Guid doctorId,
         Guid consultationId,
         CancellationToken cancellationToken = default);
+
+    Task<Result<ConsultationVideoResponse>> GetVideoAsync(
+        Guid doctorId,
+        Guid consultationId,
+        CancellationToken cancellationToken = default);
 }

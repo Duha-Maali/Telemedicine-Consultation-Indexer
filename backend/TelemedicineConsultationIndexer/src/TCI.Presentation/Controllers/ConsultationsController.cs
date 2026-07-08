@@ -198,4 +198,34 @@ public sealed class ConsultationsController(
 
         return this.ToActionResult(result);
     }
+
+    [HttpGet("{consultationId:guid}/video")]
+    [EnableRateLimiting("GeneralPolicy")]
+    [Produces("video/mp4", "video/webm", "video/quicktime", "video/x-matroska")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetVideoAsync(
+    Guid consultationId,
+    CancellationToken cancellationToken)
+    {
+        var doctorId = User.GetDoctorId();
+
+        var result = await _consultationService.GetVideoAsync(
+            doctorId,
+            consultationId,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return this.ToActionResult(result).Result!;
+        }
+
+        return new FileStreamResult(
+            result.Value.Content,
+            result.Value.ContentType)
+        {
+            EnableRangeProcessing = true
+        };
+    }
 }

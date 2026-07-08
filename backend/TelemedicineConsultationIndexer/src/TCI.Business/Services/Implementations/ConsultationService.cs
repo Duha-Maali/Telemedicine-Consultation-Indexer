@@ -256,6 +256,75 @@ public sealed class ConsultationService(
         return Result.Success();
     }
 
+    public async Task<Result<ConsultationVideoResponse>> GetVideoAsync(
+        Guid doctorId,
+        Guid consultationId,
+        CancellationToken cancellationToken = default)
+    {
+        var consultation = await _consultationRepository.GetByIdForDoctorAsync(
+        consultationId,
+        doctorId,
+        cancellationToken);
+
+        if (consultation is null)
+        {
+            _logger.LogWarning(
+                "Consultation {ConsultationId} video requested, but it was not found for doctor {DoctorId}.",
+                consultationId,
+                doctorId);
+
+            return Result<ConsultationVideoResponse>.Failure(ConsultationErrors.NotFound);
+        }
+
+        var storedFilePath = consultation.FilePath;
+
+        if (string.IsNullOrWhiteSpace(storedFilePath))
+        {
+            _logger.LogWarning(
+                "Consultation {ConsultationId} video requested by doctor {DoctorId}, but the stored file path is missing.",
+                consultationId,
+                doctorId);
+
+            return Result<ConsultationVideoResponse>.Failure(ConsultationErrors.VideoFileNotFound);
+        }
+
+        var stream = await _fileStorageService.OpenReadAsync(
+            storedFilePath,
+            cancellationToken);
+
+        if (stream is null)
+        {
+            _logger.LogWarning(
+                "Consultation {ConsultationId} video requested by doctor {DoctorId}, but stored file {FilePath} was not found.",
+                consultationId,
+                doctorId,
+                storedFilePath);
+
+            return Result<ConsultationVideoResponse>.Failure(ConsultationErrors.VideoFileNotFound);
+        }
+
+        var fileName = consultation.OriginalFileName;
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = storedFilePath;
+        }
+
+        var response = new ConsultationVideoResponse
+        {
+            Content = stream,
+            ContentType = GetVideoContentType(fileName)
+        };
+
+        _logger.LogDebug(
+            "Opened video file {FilePath} for consultation {ConsultationId} requested by doctor {DoctorId}.",
+            storedFilePath,
+            consultationId,
+            doctorId);
+
+        return Result<ConsultationVideoResponse>.Success(response);
+    }
+
     private async Task TryDeleteStoredFileAsync(string filePath)
     {
         try
@@ -271,6 +340,20 @@ public sealed class ConsultationService(
                 "Failed to delete stored consultation file {FilePath}.",
                 filePath);
         }
+    }
+
+    private static string GetVideoContentType(string fileName)
+    {
+        var extension = Path.GetExtension(fileName);
+
+        return extension.ToLowerInvariant() switch
+        {
+            ".mp4" => "video/mp4",
+            ".webm" => "video/webm",
+            ".mov" => "video/quicktime",
+            ".mkv" => "video/x-matroska",
+            _ => "application/octet-stream"
+        };
     }
 }
 

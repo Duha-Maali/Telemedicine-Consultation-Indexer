@@ -38,4 +38,9 @@ public static class ConsultationErrors
         "Consultation.CannotDeleteWhileProcessing",
         "The consultation cannot be deleted while it is being processed.",
         ErrorType.Conflict);
+
+    public static readonly Error VideoFileNotFound = new(
+        "Consultation.VideoFileNotFound",
+        "The consultation video file could not be found.",
+        ErrorType.NotFound);
 }
