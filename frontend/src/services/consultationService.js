@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient from "../utils/apiClient";
 
 export async function getConsultations() {
     const response = await apiClient.get("/consultations");
@@ -24,9 +24,7 @@ export async function createConsultation(payload) {
     formData.append("Video", payload.video);
 
     const response = await apiClient.post("/consultations", formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
+        timeout: 0,
     });
 
     return response.data;

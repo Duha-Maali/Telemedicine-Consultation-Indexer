@@ -1,6 +1,6 @@
 import axios from "axios";
-import { STORAGE_KEYS } from "../utils/constants";
-import { logger } from "./logger";
+import { STORAGE_KEYS } from "./constants";
+import { logger } from "../services/logger";
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,

@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient from "../utils/apiClient";
 
 export async function getConsultationTranscript(consultationId) {
     const response = await apiClient.get(`/consultations/${consultationId}/transcript`);
