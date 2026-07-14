@@ -3,3 +3,8 @@ export const STORAGE_KEYS = {
     AUTH_USER: "tci_auth_user",
     TOKEN_EXPIRES_AT: "tci_token_expires_at",
 };
+
+export const ROUTES = {
+    LOGIN: "/login",
+    DASHBOARD: "/",
+};

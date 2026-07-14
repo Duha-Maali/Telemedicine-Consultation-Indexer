@@ -1,8 +1,8 @@
 import axios from "axios";
 
+import { logger } from "../services/logger";
 import { clearAuthSession } from "./authStorage";
 import { STORAGE_KEYS } from "./constants";
-import { logger } from "../services/logger";
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -11,10 +11,13 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+        const token = localStorage.getItem(
+            STORAGE_KEYS.ACCESS_TOKEN
+        );
 
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization =
+                `Bearer ${token}`;
         }
 
         logger.debug("API request started", {
@@ -49,7 +52,10 @@ apiClient.interceptors.response.use(
 
         if (error?.response?.status === 401) {
             clearAuthSession();
-            window.dispatchEvent(new Event("tci:unauthorized"));
+
+            window.dispatchEvent(
+                new Event("tci:unauthorized")
+            );
         }
 
         return Promise.reject(error);
