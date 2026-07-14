@@ -5,6 +5,7 @@ import {
 
 import {
     loginDoctor as loginDoctorRequest,
+    registerDoctor as registerDoctorRequest,
 } from "../../services/authService";
 import { logger } from "../../services/logger";
 import {
@@ -44,6 +45,40 @@ export const loginDoctor = createAsyncThunk(
             return response;
         } catch (error) {
             logger.error("Doctor login failed", error);
+
+            return rejectWithValue(
+                getErrorMessage(error)
+            );
+        }
+    }
+);
+
+export const registerDoctor = createAsyncThunk(
+    "auth/registerDoctor",
+    async (doctorData, { rejectWithValue }) => {
+        try {
+            logger.info(
+                "Doctor registration started"
+            );
+
+            const response =
+                await registerDoctorRequest(doctorData);
+
+            saveAuthSession(response);
+
+            logger.info(
+                "Doctor registration completed",
+                {
+                    doctorId: response.doctor?.id,
+                }
+            );
+
+            return response;
+        } catch (error) {
+            logger.error(
+                "Doctor registration failed",
+                error
+            );
 
             return rejectWithValue(
                 getErrorMessage(error)
@@ -95,6 +130,35 @@ const authSlice = createSlice({
                     state.error =
                         action.payload ??
                         "Unable to sign in. Please try again.";
+                }
+            )
+            .addCase(
+                registerDoctor.pending,
+                (state) => {
+                    state.status = "loading";
+                    state.error = null;
+                }
+            )
+            .addCase(
+                registerDoctor.fulfilled,
+                (state, action) => {
+                    state.status = "succeeded";
+                    state.accessToken =
+                        action.payload.accessToken;
+                    state.expiresAt =
+                        action.payload.expiresAt;
+                    state.doctor =
+                        action.payload.doctor;
+                    state.isAuthenticated = true;
+                }
+            )
+            .addCase(
+                registerDoctor.rejected,
+                (state, action) => {
+                    state.status = "failed";
+                    state.error =
+                        action.payload ??
+                        "Unable to create your account. Please try again.";
                 }
             );
     },

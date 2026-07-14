@@ -6,5 +6,6 @@ export const STORAGE_KEYS = {
 
 export const ROUTES = {
     LOGIN: "/login",
+    REGISTER: "/register",
     DASHBOARD: "/",
 };
