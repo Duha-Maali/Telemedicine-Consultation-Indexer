@@ -4,6 +4,8 @@ import {
 } from "react-router-dom";
 
 import AuthLayout from "../layout/AuthLayout/AuthLayout";
+import DashboardLayout from "../layout/DashboardLayout/DashboardLayout";
+import DashboardPage from "../pages/DashboardPage/DashboardPage";
 import LoginPage from "../pages/LoginPage/LoginPage";
 import RegisterPage from "../pages/RegisterPage/RegisterPage";
 import { ROUTES } from "../utils/constants";
@@ -33,21 +35,13 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
             {
-                path: ROUTES.DASHBOARD,
-                element: (
-                    <main
-                        style={{ padding: "3rem" }}
-                    >
-                        <h1>
-                            Signed in successfully
-                        </h1>
-
-                        <p>
-                            The protected workspace
-                            will be added next.
-                        </p>
-                    </main>
-                ),
+                element: <DashboardLayout />,
+                children: [
+                    {
+                        path: ROUTES.DASHBOARD,
+                        element: <DashboardPage />,
+                    },
+                ],
             },
         ],
     },

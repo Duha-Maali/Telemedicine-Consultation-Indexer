@@ -5,10 +5,12 @@ import {
 
 import {
     loginDoctor as loginDoctorRequest,
+    logoutDoctor as logoutDoctorRequest,
     registerDoctor as registerDoctorRequest,
 } from "../../services/authService";
 import { logger } from "../../services/logger";
 import {
+    clearAuthSession,
     loadAuthSession,
     saveAuthSession,
 } from "../../utils/authStorage";
@@ -168,5 +170,25 @@ export const {
     authErrorCleared,
     sessionCleared,
 } = authSlice.actions;
+
+export function logoutDoctor() {
+    return async (dispatch) => {
+        clearAuthSession();
+        dispatch(sessionCleared());
+        
+        try {
+            await logoutDoctorRequest();
+            logger.info("Doctor logged out");
+        } catch (error) {
+            logger.warn(
+                "Local session was cleared, but the video authentication cookie could not be removed.",
+                {
+                    status: error?.response?.status,
+                    message: error?.message,
+                }
+            );
+        }
+    };
+}
 
 export default authSlice.reducer;
