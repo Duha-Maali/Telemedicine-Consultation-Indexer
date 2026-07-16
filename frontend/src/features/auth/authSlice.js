@@ -17,6 +17,9 @@ import {
 import {
     getErrorMessage,
 } from "../../utils/getErrorMessage";
+import {
+    consultationsCleared,
+} from "../consultations/consultationsSlice";
 
 const storedSession = loadAuthSession();
 
@@ -174,16 +177,20 @@ export const {
 export function logoutDoctor() {
     return async (dispatch) => {
         clearAuthSession();
+
         dispatch(sessionCleared());
-        
+        dispatch(consultationsCleared());
+
         try {
             await logoutDoctorRequest();
+
             logger.info("Doctor logged out");
         } catch (error) {
             logger.warn(
-                "Local session was cleared, but the video authentication cookie could not be removed.",
+                "The local session was cleared, but the server logout request failed.",
                 {
-                    status: error?.response?.status,
+                    status:
+                        error?.response?.status,
                     message: error?.message,
                 }
             );
