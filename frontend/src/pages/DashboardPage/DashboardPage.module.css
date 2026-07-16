@@ -10,8 +10,7 @@
     gap: 24px;
 }
 
-.eyebrow,
-.cardEyebrow {
+.eyebrow {
     display: block;
     margin-bottom: 7px;
     color: var(--color-primary);
@@ -36,35 +35,155 @@
     line-height: 1.6;
 }
 
-.welcomeCard {
-    max-width: 760px;
-    padding: 28px;
+.refreshButton {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 0 14px;
+    color: var(--color-text);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-radius: 11px;
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
+    font-size: 13px;
+    font-weight: 700;
 }
 
-.welcomeCard h2 {
-    margin: 0;
-    color: var(--color-text);
-    font-size: 22px;
+.refreshButton:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    background: #f8fafc;
 }
 
-.welcomeCard p {
-    max-width: 650px;
-    margin: 10px 0 0;
-    color: var(--color-text-muted);
-    font-size: 14px;
-    line-height: 1.7;
+.refreshButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.spinning {
+    animation: spin 0.85s linear infinite;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.errorState {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 13px;
+    background: #fef2f2;
+}
+
+.errorState div {
+    display: grid;
+    gap: 3px;
+}
+
+.errorState strong {
+    font-size: 13px;
+}
+
+.errorState span {
+    font-size: 12px;
+}
+
+.errorState button {
+    padding: 8px 11px;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 1050px) {
+    .statsGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 620px) {
     .pageHeader {
+        align-items: stretch;
         flex-direction: column;
     }
 
-    .welcomeCard {
-        padding: 22px;
+    .refreshButton {
+        width: fit-content;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .errorState {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .errorState button {
+        grid-column: 2;
+        width: fit-content;
+    }
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.uploadButton {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    color: #ffffff;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    box-shadow: 0 9px 22px rgba(37, 99, 235, 0.2);
+    font-size: 13px;
+    font-weight: 750;
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.uploadButton:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 27px rgba(37, 99, 235, 0.25);
+}
+
+@media (max-width: 620px) {
+    .headerActions {
+        width: 100%;
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .uploadButton,
+    .refreshButton {
+        flex: 1 1 auto;
     }
 }

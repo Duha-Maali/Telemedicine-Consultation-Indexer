@@ -9,3 +9,11 @@ export const ROUTES = {
     REGISTER: "/register",
     DASHBOARD: "/",
 };
+
+export const CONSULTATION_STATUS = {
+    PENDING: "Pending",
+    PROCESSING: "Processing",
+    COMPLETED: "Completed",
+    FAILED: "Failed",
+    DELETION_REQUESTED: "DeletionRequested",
+};

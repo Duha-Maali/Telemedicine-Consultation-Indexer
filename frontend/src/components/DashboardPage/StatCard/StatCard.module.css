@@ -1,0 +1,77 @@
+.card {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    border-radius: 17px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--shadow-sm);
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.07);
+}
+
+.icon {
+    width: 43px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 13px;
+}
+
+.primary {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.info {
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+.success {
+    color: #15803d;
+    background: #dcfce7;
+}
+
+.danger {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+.content {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.content span {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.content strong {
+    color: var(--color-text);
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.7px;
+}
+
+.content small {
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
