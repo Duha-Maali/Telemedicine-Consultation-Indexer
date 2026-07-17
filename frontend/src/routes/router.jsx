@@ -10,6 +10,7 @@ import LoginPage from "../pages/LoginPage/LoginPage";
 import RegisterPage from "../pages/RegisterPage/RegisterPage";
 import ConsultationsPage from "../pages/ConsultationsPage/ConsultationsPage";
 import UploadConsultationPage from "../pages/UploadConsultationPage/UploadConsultationPage";
+import ConsultationDetailsPage from "../pages/ConsultationDetailsPage/ConsultationDetailsPage";
 import { ROUTES } from "../utils/constants";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
                     {
                         path: ROUTES.UPLOAD_CONSULTATION,
                         element: <UploadConsultationPage />,
+                    },
+                    {
+                        path: ROUTES.CONSULTATION_DETAILS,
+                        element: <ConsultationDetailsPage />,
                     },
                 ],  
             },

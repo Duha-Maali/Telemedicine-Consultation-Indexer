@@ -22,6 +22,7 @@ import {
 } from "../../features/consultations/consultationsSlice";
 
 import {
+    buildConsultationDetailsRoute,
     ROUTES,
 } from "../../utils/constants";
 
@@ -85,9 +86,14 @@ function UploadConsultationPage() {
             )
         ) {
             navigate(
-                ROUTES.CONSULTATIONS,
+                buildConsultationDetailsRoute(
+                    resultAction.payload.id
+                ),
                 {
                     replace: true,
+                    state: {
+                        uploadCompleted: true,
+                    },
                 }
             );
         }

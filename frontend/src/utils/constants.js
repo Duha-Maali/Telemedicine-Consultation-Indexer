@@ -10,7 +10,15 @@ export const ROUTES = {
     DASHBOARD: "/",
     CONSULTATIONS: "/consultations",
     UPLOAD_CONSULTATION: "/consultations/upload",
-};;
+    CONSULTATION_DETAILS:
+        "/consultations/:consultationId",
+};
+
+export function buildConsultationDetailsRoute(
+    consultationId
+) {
+    return `/consultations/${consultationId}`;
+}
 
 export const CONSULTATION_STATUS = {
     PENDING: "Pending",
@@ -19,6 +27,9 @@ export const CONSULTATION_STATUS = {
     FAILED: "Failed",
     DELETION_REQUESTED: "DeletionRequested",
 };
+
+export const CONSULTATION_STATUS_POLL_INTERVAL_MS =
+    5000;
 
 export const VIDEO_VALIDATION = {
     MAX_SIZE_BYTES: 1024 * 1024 * 1024,

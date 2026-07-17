@@ -1,0 +1,189 @@
+.page {
+    display: grid;
+    gap: 23px;
+}
+
+.line,
+.icon,
+.detailIcon,
+.heroIcon {
+    position: relative;
+    overflow: hidden;
+    background: #e8edf4;
+}
+
+.line::after,
+.icon::after,
+.detailIcon::after,
+.heroIcon::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.72), transparent);
+    animation: shimmer 1.35s infinite;
+}
+
+.backLine {
+    width: 145px;
+    height: 14px;
+    border-radius: 7px;
+}
+
+.header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 15px;
+}
+
+.icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+}
+
+.headerText {
+    display: grid;
+    gap: 9px;
+}
+
+.eyebrow {
+    width: 120px;
+    height: 10px;
+    border-radius: 5px;
+}
+
+.title {
+    width: min(440px, 75%);
+    height: 30px;
+    border-radius: 9px;
+}
+
+.subtitle {
+    width: min(360px, 66%);
+    height: 14px;
+    border-radius: 7px;
+}
+
+.badge {
+    width: 92px;
+    height: 30px;
+    border-radius: 15px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.42fr);
+    gap: 20px;
+}
+
+.card,
+.cardLarge {
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    background: var(--color-surface);
+}
+
+.card {
+    padding: 22px;
+}
+
+.cardLarge {
+    padding: 30px;
+}
+
+.cardTitle {
+    width: 170px;
+    height: 19px;
+    margin-bottom: 23px;
+    border-radius: 7px;
+}
+
+.detailRow {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 11px;
+    margin-top: 16px;
+}
+
+.detailIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+}
+
+.label {
+    width: 90px;
+    height: 10px;
+    margin-bottom: 7px;
+    border-radius: 5px;
+}
+
+.value {
+    width: min(190px, 80%);
+    height: 14px;
+    border-radius: 6px;
+}
+
+.heroIcon {
+    width: 62px;
+    height: 62px;
+    margin-bottom: 20px;
+    border-radius: 19px;
+}
+
+.cardEyebrow {
+    width: 125px;
+    height: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.largeTitle {
+    width: min(420px, 75%);
+    height: 28px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+}
+
+.paragraph,
+.paragraphShort {
+    height: 13px;
+    border-radius: 6px;
+}
+
+.paragraph {
+    width: 90%;
+    margin-bottom: 9px;
+}
+
+.paragraphShort {
+    width: 68%;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@media (max-width: 880px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .header {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .badge {
+        grid-column: 2;
+    }
+
+    .cardLarge {
+        padding: 23px 20px;
+    }
+}

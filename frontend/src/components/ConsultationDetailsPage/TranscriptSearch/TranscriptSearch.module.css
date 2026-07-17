@@ -1,0 +1,258 @@
+.card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 22px;
+    background: #fbfdff;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.headerIcon {
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    color: #0f766e;
+    border-radius: 10px;
+    background: #ccfbf1;
+}
+
+.cardHeader h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 15px;
+    letter-spacing: -0.15px;
+}
+
+.cardHeader p {
+    margin: 4px 0 0;
+    color: var(--color-text-muted);
+    font-size: 11.8px;
+    line-height: 1.45;
+}
+
+.searchForm {
+    display: grid;
+    gap: 7px;
+}
+
+.searchForm > label {
+    color: #334155;
+    font-size: 11.5px;
+    font-weight: 750;
+}
+
+.searchBox {
+    min-height: 46px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 5px 5px 13px;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.searchBox:focus-within {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.searchBoxInvalid {
+    border-color: #fca5a5;
+}
+
+.searchBox input {
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+    color: var(--color-text);
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 12.5px;
+}
+
+.searchBox input::placeholder {
+    color: #94a3b8;
+}
+
+.searchBox button {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 12px;
+    color: #ffffff;
+    border: 0;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    font-size: 11.5px;
+    font-weight: 750;
+}
+
+.searchBox button:disabled {
+    cursor: wait;
+    opacity: 0.72;
+}
+
+.validationError {
+    color: #b91c1c;
+    font-size: 11.2px;
+}
+
+.resultsArea {
+    min-height: 300px;
+    flex: 1;
+    margin-top: 16px;
+}
+
+.initialState,
+.loadingState,
+.emptyState {
+    min-height: 300px;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    padding: 24px;
+    text-align: center;
+    border: 1px dashed #cbd5e1;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.initialState > span,
+.emptyState > span {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 12px;
+    color: var(--color-primary-dark);
+    border-radius: 14px;
+    background: var(--color-primary-light);
+}
+
+.initialState h4,
+.emptyState h4 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.initialState p,
+.emptyState p {
+    max-width: 330px;
+    margin: 7px 0 0;
+    color: var(--color-text-muted);
+    font-size: 11.7px;
+    line-height: 1.55;
+}
+
+.loadingState {
+    gap: 5px;
+    color: var(--color-primary-dark);
+}
+
+.loadingState strong {
+    margin-top: 7px;
+    color: var(--color-text);
+    font-size: 12.5px;
+}
+
+.loadingState span {
+    color: var(--color-text-muted);
+    font-size: 11.5px;
+}
+
+.errorState {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    padding: 13px;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    background: #fef2f2;
+}
+
+.errorState div {
+    display: grid;
+    gap: 3px;
+}
+
+.errorState strong {
+    font-size: 12px;
+}
+
+.errorState span {
+    font-size: 11.3px;
+    line-height: 1.45;
+}
+
+.resultsList {
+    display: grid;
+    gap: 11px;
+}
+
+.resultsSummary {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 5px;
+    color: var(--color-text-muted);
+    font-size: 11.5px;
+}
+
+.resultsSummary strong {
+    color: var(--color-text);
+    font-size: 12.5px;
+}
+
+.resultCards {
+    max-height: 455px;
+    display: grid;
+    gap: 9px;
+    padding-right: 3px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 620px) {
+    .card {
+        padding: 18px;
+    }
+
+    .searchBox button span {
+        display: none;
+    }
+
+    .searchBox button {
+        width: 38px;
+        padding: 0;
+    }
+}

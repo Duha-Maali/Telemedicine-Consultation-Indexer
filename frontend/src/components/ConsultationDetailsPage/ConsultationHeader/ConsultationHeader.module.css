@@ -1,0 +1,158 @@
+.header {
+    display: grid;
+    gap: 20px;
+}
+
+.backLink {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--color-text-muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+    color: var(--color-primary-dark);
+}
+
+.mainRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.titleGroup {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: #ffffff;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    box-shadow: 0 12px 26px rgba(37, 99, 235, 0.2);
+}
+
+.titleContent {
+    min-width: 0;
+}
+
+.eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.titleContent h1 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--color-text);
+    font-size: clamp(25px, 3vw, 34px);
+    line-height: 1.16;
+    letter-spacing: -0.85px;
+}
+
+.metadata {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px 17px;
+    margin-top: 11px;
+}
+
+.metadata span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--color-text-muted);
+    font-size: 13px;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.refreshButton {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.refreshButton:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.refreshButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.spinning {
+    animation: spin 0.85s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 760px) {
+    .mainRow {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 520px) {
+    .titleGroup {
+        gap: 11px;
+    }
+
+    .icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 13px;
+    }
+
+    .metadata {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+}

@@ -16,7 +16,6 @@ ReactDOM.createRoot(
     <React.StrictMode>
         <Provider store={store}>
             <AuthSessionWatcher />
-
             <RouterProvider router={router} />
         </Provider>
     </React.StrictMode>

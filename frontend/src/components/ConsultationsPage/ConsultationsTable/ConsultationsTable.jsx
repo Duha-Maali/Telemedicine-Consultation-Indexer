@@ -6,6 +6,12 @@ import {
 import StatusBadge from "../../shared/StatusBadge/StatusBadge";
 import styles from "./ConsultationsTable.module.css";
 
+import { Link } from "react-router-dom";
+
+import {
+    buildConsultationDetailsRoute,
+} from "../../../utils/constants";
+
 const dateFormatter = new Intl.DateTimeFormat(
     "en",
     {
@@ -91,10 +97,15 @@ function ConsultationsTable({
                                                 />
                                             </span>
 
-                                            <strong>
+                                            <Link
+                                                className={styles.titleLink}
+                                                to={buildConsultationDetailsRoute(
+                                                    consultation.id
+                                                )}
+                                            >
                                                 {consultation.title ||
                                                     "Untitled consultation"}
-                                            </strong>
+                                            </Link>
                                         </div>
                                     </td>
 

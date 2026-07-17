@@ -9,6 +9,7 @@ import styles from "./RecentConsultations.module.css";
 import { Link } from "react-router-dom";
 
 import {
+    buildConsultationDetailsRoute,
     ROUTES,
 } from "../../../utils/constants";
 
@@ -102,10 +103,15 @@ function RecentConsultations({
                                         styles.details
                                     }
                                 >
-                                    <strong>
+                                    <Link
+                                        className={styles.titleLink}
+                                        to={buildConsultationDetailsRoute(
+                                            consultation.id
+                                        )}
+                                    >
                                         {consultation.title ||
                                             "Untitled consultation"}
-                                    </strong>
+                                    </Link>
 
                                     <span>
                                         Patient:{" "}
