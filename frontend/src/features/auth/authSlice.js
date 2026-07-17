@@ -1,7 +1,4 @@
-import {
-    createAsyncThunk,
-    createSlice,
-} from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import {
     loginDoctor as loginDoctorRequest,
@@ -9,17 +6,13 @@ import {
     registerDoctor as registerDoctorRequest,
 } from "../../services/authService";
 import { logger } from "../../services/logger";
+import { consultationsCleared } from "../consultations/consultationsSlice";
 import {
     clearAuthSession,
     loadAuthSession,
     saveAuthSession,
 } from "../../utils/authStorage";
-import {
-    getErrorMessage,
-} from "../../utils/getErrorMessage";
-import {
-    consultationsCleared,
-} from "../consultations/consultationsSlice";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 
 const storedSession = loadAuthSession();
 
@@ -37,10 +30,7 @@ export const loginDoctor = createAsyncThunk(
     async (credentials, { rejectWithValue }) => {
         try {
             logger.info("Doctor login started");
-
-            const response =
-                await loginDoctorRequest(credentials);
-
+            const response = await loginDoctorRequest(credentials);
             saveAuthSession(response);
 
             logger.info("Doctor login completed", {
@@ -50,10 +40,7 @@ export const loginDoctor = createAsyncThunk(
             return response;
         } catch (error) {
             logger.error("Doctor login failed", error);
-
-            return rejectWithValue(
-                getErrorMessage(error)
-            );
+            return rejectWithValue(getErrorMessage(error));
         }
     }
 );
@@ -62,32 +49,18 @@ export const registerDoctor = createAsyncThunk(
     "auth/registerDoctor",
     async (doctorData, { rejectWithValue }) => {
         try {
-            logger.info(
-                "Doctor registration started"
-            );
-
-            const response =
-                await registerDoctorRequest(doctorData);
-
+            logger.info("Doctor registration started");
+            const response = await registerDoctorRequest(doctorData);
             saveAuthSession(response);
 
-            logger.info(
-                "Doctor registration completed",
-                {
-                    doctorId: response.doctor?.id,
-                }
-            );
+            logger.info("Doctor registration completed", {
+                doctorId: response.doctor?.id,
+            });
 
             return response;
         } catch (error) {
-            logger.error(
-                "Doctor registration failed",
-                error
-            );
-
-            return rejectWithValue(
-                getErrorMessage(error)
-            );
+            logger.error("Doctor registration failed", error);
+            return rejectWithValue(getErrorMessage(error));
         }
     }
 );
@@ -99,7 +72,6 @@ const authSlice = createSlice({
         authErrorCleared(state) {
             state.error = null;
         },
-
         sessionCleared(state) {
             state.accessToken = null;
             state.expiresAt = null;
@@ -115,82 +87,52 @@ const authSlice = createSlice({
                 state.status = "loading";
                 state.error = null;
             })
-            .addCase(
-                loginDoctor.fulfilled,
-                (state, action) => {
-                    state.status = "succeeded";
-                    state.accessToken =
-                        action.payload.accessToken;
-                    state.expiresAt =
-                        action.payload.expiresAt;
-                    state.doctor =
-                        action.payload.doctor;
-                    state.isAuthenticated = true;
-                }
-            )
-            .addCase(
-                loginDoctor.rejected,
-                (state, action) => {
-                    state.status = "failed";
-                    state.error =
-                        action.payload ??
-                        "Unable to sign in. Please try again.";
-                }
-            )
-            .addCase(
-                registerDoctor.pending,
-                (state) => {
-                    state.status = "loading";
-                    state.error = null;
-                }
-            )
-            .addCase(
-                registerDoctor.fulfilled,
-                (state, action) => {
-                    state.status = "succeeded";
-                    state.accessToken =
-                        action.payload.accessToken;
-                    state.expiresAt =
-                        action.payload.expiresAt;
-                    state.doctor =
-                        action.payload.doctor;
-                    state.isAuthenticated = true;
-                }
-            )
-            .addCase(
-                registerDoctor.rejected,
-                (state, action) => {
-                    state.status = "failed";
-                    state.error =
-                        action.payload ??
-                        "Unable to create your account. Please try again.";
-                }
-            );
+            .addCase(loginDoctor.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                state.accessToken = action.payload.accessToken;
+                state.expiresAt = action.payload.expiresAt;
+                state.doctor = action.payload.doctor;
+                state.isAuthenticated = true;
+            })
+            .addCase(loginDoctor.rejected, (state, action) => {
+                state.status = "failed";
+                state.error = action.payload ?? "Unable to sign in. Please try again.";
+            })
+            .addCase(registerDoctor.pending, (state) => {
+                state.status = "loading";
+                state.error = null;
+            })
+            .addCase(registerDoctor.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                state.accessToken = action.payload.accessToken;
+                state.expiresAt = action.payload.expiresAt;
+                state.doctor = action.payload.doctor;
+                state.isAuthenticated = true;
+            })
+            .addCase(registerDoctor.rejected, (state, action) => {
+                state.status = "failed";
+                state.error =
+                    action.payload ?? "Unable to create your account. Please try again.";
+            });
     },
 });
 
-export const {
-    authErrorCleared,
-    sessionCleared,
-} = authSlice.actions;
+export const { authErrorCleared, sessionCleared } = authSlice.actions;
 
 export function logoutDoctor() {
     return async (dispatch) => {
         clearAuthSession();
-
         dispatch(sessionCleared());
         dispatch(consultationsCleared());
 
         try {
             await logoutDoctorRequest();
-
             logger.info("Doctor logged out");
         } catch (error) {
             logger.warn(
-                "The local session was cleared, but the server logout request failed.",
+                "Local session was cleared, but the video authentication cookie could not be removed.",
                 {
-                    status:
-                        error?.response?.status,
+                    status: error?.response?.status,
                     message: error?.message,
                 }
             );
