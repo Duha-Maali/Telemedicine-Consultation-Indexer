@@ -9,7 +9,8 @@ export const ROUTES = {
     REGISTER: "/register",
     DASHBOARD: "/",
     CONSULTATIONS: "/consultations",
-};
+    UPLOAD_CONSULTATION: "/consultations/upload",
+};;
 
 export const CONSULTATION_STATUS = {
     PENDING: "Pending",
@@ -17,4 +18,23 @@ export const CONSULTATION_STATUS = {
     COMPLETED: "Completed",
     FAILED: "Failed",
     DELETION_REQUESTED: "DeletionRequested",
+};
+
+export const VIDEO_VALIDATION = {
+    MAX_SIZE_BYTES: 1024 * 1024 * 1024,
+
+    ALLOWED_EXTENSIONS: [
+        ".mp4",
+        ".mov",
+        ".mkv",
+    ],
+
+    ALLOWED_CONTENT_TYPES: [
+        "video/mp4",
+        "video/quicktime",
+        "video/x-matroska",
+    ],
+
+    ACCEPT:
+        ".mp4,.mov,.mkv,video/mp4,video/quicktime,video/x-matroska",
 };

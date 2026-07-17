@@ -2,6 +2,7 @@ import {
     LayoutDashboard,
     ListVideo,
     LogOut,
+    UploadCloud,
     X,
 } from "lucide-react";
 import {
@@ -22,6 +23,12 @@ const navigationItems = [
         label: "Dashboard",
         to: ROUTES.DASHBOARD,
         icon: LayoutDashboard,
+        end: true,
+    },
+    {
+        label: "Upload consultation",
+        to: ROUTES.UPLOAD_CONSULTATION,
+        icon: UploadCloud,
         end: true,
     },
     {

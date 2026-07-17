@@ -5,12 +5,16 @@ import {
 import {
     CircleAlert,
     RefreshCw,
+    UploadCloud,
 } from "lucide-react";
 import {
     useDispatch,
     useSelector,
 } from "react-redux";
-
+import { Link } from "react-router-dom";
+import {
+    ROUTES,
+} from "../../utils/constants";
 import ConsultationsTable from "../../components/ConsultationsPage/ConsultationsTable/ConsultationsTable";
 import DashboardSkeleton from "../../components/DashboardPage/DashboardSkeleton/DashboardSkeleton";
 import {
@@ -79,32 +83,39 @@ function ConsultationsPage() {
                     </p>
                 </div>
 
-                <button
-                    className={
-                        styles.refreshButton
-                    }
-                    type="button"
-                    onClick={() =>
-                        dispatch(
-                            fetchConsultations()
-                        )
-                    }
-                    disabled={
-                        listStatus === "loading"
-                    }
-                >
-                    <RefreshCw
-                        className={
-                            listStatus ===
-                            "loading"
-                                ? styles.spinning
-                                : ""
-                        }
-                        size={17}
-                    />
+                <div className={styles.headerActions}>
+                    <Link
+                        className={styles.uploadButton}
+                        to={ROUTES.UPLOAD_CONSULTATION}
+                    >
+                        <UploadCloud size={17} />
+                        New consultation
+                    </Link>
 
-                    Refresh
-                </button>
+                    <button
+                        className={styles.refreshButton}
+                        type="button"
+                        onClick={() =>
+                            dispatch(
+                                fetchConsultations()
+                            )
+                        }
+                        disabled={
+                            listStatus === "loading"
+                        }
+                    >
+                        <RefreshCw
+                            className={
+                                listStatus === "loading"
+                                    ? styles.spinning
+                                    : ""
+                            }
+                            size={17}
+                        />
+
+                        Refresh
+                    </button>
+                </div>
             </section>
 
             {listError && (

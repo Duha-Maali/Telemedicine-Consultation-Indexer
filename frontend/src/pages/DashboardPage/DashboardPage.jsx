@@ -8,12 +8,14 @@ import {
     Clock3,
     Files,
     RefreshCw,
+    UploadCloud,
 } from "lucide-react";
 import {
     useDispatch,
     useSelector,
 } from "react-redux";
 
+import { Link } from "react-router-dom";
 import DashboardSkeleton from "../../components/DashboardPage/DashboardSkeleton/DashboardSkeleton";
 import RecentConsultations from "../../components/DashboardPage/RecentConsultations/RecentConsultations";
 import StatCard from "../../components/DashboardPage/StatCard/StatCard";
@@ -22,6 +24,7 @@ import {
 } from "../../features/consultations/consultationsSlice";
 import {
     CONSULTATION_STATUS,
+    ROUTES,
 } from "../../utils/constants";
 import styles from "./DashboardPage.module.css";
 
@@ -123,32 +126,39 @@ function DashboardPage() {
                     </p>
                 </div>
 
-                <button
-                    className={
-                        styles.refreshButton
-                    }
-                    type="button"
-                    onClick={() =>
-                        dispatch(
-                            fetchConsultations()
-                        )
-                    }
-                    disabled={
-                        listStatus === "loading"
-                    }
-                >
-                    <RefreshCw
-                        className={
-                            listStatus ===
-                            "loading"
-                                ? styles.spinning
-                                : ""
-                        }
-                        size={17}
-                    />
+                <div className={styles.headerActions}>
+                    <Link
+                        className={styles.uploadButton}
+                        to={ROUTES.UPLOAD_CONSULTATION}
+                    >
+                        <UploadCloud size={17} />
+                        New consultation
+                    </Link>
 
-                    Refresh
-                </button>
+                    <button
+                        className={styles.refreshButton}
+                        type="button"
+                        onClick={() =>
+                            dispatch(
+                                fetchConsultations()
+                            )
+                        }
+                        disabled={
+                            listStatus === "loading"
+                        }
+                    >
+                        <RefreshCw
+                            className={
+                                listStatus === "loading"
+                                    ? styles.spinning
+                                    : ""
+                            }
+                            size={17}
+                        />
+
+                        Refresh
+                    </button>
+                </div>
             </section>
 
             {listError && (

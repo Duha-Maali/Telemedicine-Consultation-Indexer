@@ -33,6 +33,54 @@
     font-size: 14px;
 }
 
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.uploadButton {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    color: #ffffff;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            135deg,
+            var(--color-primary),
+            var(--color-primary-dark)
+        );
+    box-shadow:
+        0 9px 22px
+        rgba(37, 99, 235, 0.2);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.uploadButton:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+    .headerActions {
+        width: 100%;
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .uploadButton,
+    .refreshButton {
+        flex: 1 1 auto;
+    }
+}
+
 .refreshButton {
     min-height: 42px;
     display: inline-flex;
