@@ -245,8 +245,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
-app.UseCors(FrontendCorsPolicy);
-
 app.UseAuthentication();
 
 app.UseMiddleware<RequestLoggingMiddleware>();

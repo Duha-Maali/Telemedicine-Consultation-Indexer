@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TCI.Business.DTOs.Doctors.Responses;
@@ -21,6 +20,7 @@ namespace TCI.Presentation.Controllers
         [ProducesResponseType(typeof(DoctorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<DoctorResponse>> GetCurrentDoctorAsync(CancellationToken cancellationToken)
         {
             var doctorId = User.GetDoctorId();
