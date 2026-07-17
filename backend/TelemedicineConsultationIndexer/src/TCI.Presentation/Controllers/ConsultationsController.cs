@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TCI.Business.DTOs.Consultations.Requests;
 using TCI.Business.DTOs.Consultations.Responses;
 using TCI.Business.DTOs.Transcripts.Responses;
 using TCI.Business.Models.Storage;
-using TCI.Business.Services.Implementations;
 using TCI.Business.Services.Interfaces;
 using TCI.Presentation.Contracts.Consultations;
 using TCI.Presentation.Extensions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace TCI.Presentation.Controllers;
 
@@ -26,13 +23,20 @@ public sealed class ConsultationsController(
 
     private readonly ITranscriptService _transcriptService = transcriptService;
 
+    private const long MaximumFileSize = 1024L * 1024L * 1024L; // 1 GB
+
+    private const long MaximumRequestSize = MaximumFileSize + (10L * 1024L * 1024L);
+
     [HttpPost]
     [Consumes("multipart/form-data")]
     [EnableRateLimiting("UploadPolicy")]
-    [RequestSizeLimit(1_073_741_824)]
+    [RequestSizeLimit(MaximumRequestSize)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaximumRequestSize)]
     [ProducesResponseType(typeof(CreateConsultationResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<CreateConsultationResponse>> CreateAsync(
@@ -81,6 +85,7 @@ public sealed class ConsultationsController(
         typeof(IReadOnlyList<ConsultationListItemResponse>),
         StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<IReadOnlyList<ConsultationListItemResponse>>>GetAllAsync(
             CancellationToken cancellationToken)
     {
@@ -100,6 +105,7 @@ public sealed class ConsultationsController(
         StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<ConsultationDetailsResponse>> GetByIdAsync(
             Guid consultationId,
             CancellationToken cancellationToken)
@@ -121,6 +127,7 @@ public sealed class ConsultationsController(
         StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<ConsultationStatusResponse>> GetStatusAsync(
             Guid consultationId,
             CancellationToken cancellationToken)
@@ -141,6 +148,7 @@ public sealed class ConsultationsController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<ConsultationTranscriptResponse>> GetTranscriptAsync(
         Guid consultationId,
         CancellationToken cancellationToken)
@@ -161,6 +169,7 @@ public sealed class ConsultationsController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteAsync(
         Guid consultationId,
         CancellationToken cancellationToken)
@@ -183,6 +192,7 @@ public sealed class ConsultationsController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<IReadOnlyList<TranscriptSegmentResponse>>> SearchTranscriptAsync(
         Guid consultationId,
         [FromQuery] string query,
@@ -203,8 +213,10 @@ public sealed class ConsultationsController(
     [EnableRateLimiting("GeneralPolicy")]
     [Produces("video/mp4", "video/webm", "video/quicktime", "video/x-matroska")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status206PartialContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetVideoAsync(
     Guid consultationId,
     CancellationToken cancellationToken)
