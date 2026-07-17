@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     rabbitmq_password: str = "guest"
     rabbitmq_virtual_host: str = "/"
     rabbitmq_processing_queue: str = "consultation.processing"
+    rabbitmq_heartbeat_seconds: int = 60
+    rabbitmq_blocked_connection_timeout_seconds: int = 300
+    rabbitmq_connection_attempts: int = 3
+    rabbitmq_connection_retry_delay_seconds: int = 5
+    rabbitmq_reconnect_delay_seconds: int = 5
 
     database_host: str = "localhost"
     database_port: int = 5432

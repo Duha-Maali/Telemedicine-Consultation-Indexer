@@ -1,10 +1,6 @@
 import logging
-import time
 from datetime import datetime, timezone
 from uuid import UUID
-
-from app.database.connection import Database
-from app.database.models import ConsultationStatus
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -13,20 +9,16 @@ from app.common.exceptions import (
     ConsultationProcessingError,
     ConsultationProcessingSkipped,
 )
-
+from app.database.connection import Database
+from app.database.models import ConsultationStatus
 from app.database.repositories.consultation_repository import (
     ConsultationRepository,
 )
-
 from app.database.repositories.transcript_repository import (
     TranscriptRepository,
 )
-
+from app.processing.transcription_service import TranscriptionService
 from app.processing.video_processor import VideoProcessor
-
-from app.processing.transcription_service import (
-    TranscriptionService,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -46,17 +38,18 @@ class ConsultationProcessor:
         self._video_processor = video_processor
         self._transcription_service = transcription_service
 
-    
     def process(
         self,
         consultation_id: UUID,
     ) -> None:
         consultation_id_text = str(consultation_id)
+        cleanup_required = False
 
         try:
             storage_key = self._start_processing(
                 consultation_id
             )
+            cleanup_required = True
 
             processing_result = self._video_processor.process(
                 storage_key=storage_key,
@@ -80,9 +73,6 @@ class ConsultationProcessor:
         except ConsultationNotFoundError:
             raise
 
-        except ConsultationNotFoundError:
-            raise
-        
         except ConsultationProcessingSkipped:
             raise
 
@@ -116,11 +106,10 @@ class ConsultationProcessor:
             ) from exception
 
         finally:
-            self._video_processor.cleanup_processed_files(
-                consultation_id_text
-            )
-    
-
+            if cleanup_required:
+                self._video_processor.cleanup_processed_files(
+                    consultation_id_text
+                )
 
     def _start_processing(self, consultation_id: UUID) -> str:
         with self._database.create_session() as session:
@@ -131,8 +120,8 @@ class ConsultationProcessor:
 
             if consultation is None:
                 raise ConsultationNotFoundError(
-                f"Consultation '{consultation_id}' "
-                "was not found."
+                    f"Consultation '{consultation_id}' "
+                    "was not found."
                 )
 
             if (
@@ -141,6 +130,15 @@ class ConsultationProcessor:
             ):
                 logger.info(
                     "Consultation is already completed. "
+                    "Skipping duplicate message. "
+                    "ConsultationId=%s",
+                    consultation_id,
+                )
+                raise ConsultationProcessingSkipped()
+
+            if consultation.status == ConsultationStatus.FAILED:
+                logger.info(
+                    "Consultation has already failed. "
                     "Skipping duplicate message. "
                     "ConsultationId=%s",
                     consultation_id,
@@ -158,12 +156,12 @@ class ConsultationProcessor:
                 )
                 raise ConsultationProcessingSkipped()
 
-            storage_key = consultation.file_path    
+            storage_key = consultation.file_path
 
             self._consultation_repository.mark_processing(
                 consultation
             )
- 
+
             session.commit()
 
             logger.info(
@@ -211,9 +209,7 @@ class ConsultationProcessor:
                 segments,
             )
 
-            consultation.duration_seconds = (
-                duration_seconds
-            )
+            consultation.duration_seconds = duration_seconds
 
             self._consultation_repository.mark_completed(
                 consultation
