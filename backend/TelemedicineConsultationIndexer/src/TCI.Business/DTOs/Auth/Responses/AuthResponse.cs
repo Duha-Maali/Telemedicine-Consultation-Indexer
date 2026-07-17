@@ -3,6 +3,6 @@
 public sealed class AuthResponse
 {
     public string AccessToken { get; init; } = string.Empty;
-    public DateTime ExpiresAt { get; init; }
+    public DateTimeOffset ExpiresAt { get; init; }
     public required DoctorAuthResponse Doctor { get; init; }
 }

@@ -10,6 +10,7 @@ using TCI.Business;
 using TCI.Business.Abstractions.Authentication;
 using TCI.Business.TechnicalServices.Authentication;
 using TCI.DataAccess;
+using TCI.Presentation.Authentication;
 using TCI.Presentation.Middleware;
 using TCI.Presentation.Options;
 
@@ -107,6 +108,25 @@ builder.Services
 
                 ClockSkew = TimeSpan.Zero
             };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var request = context.HttpContext.Request;
+
+                if (IsConsultationVideoRequest(request) &&
+                    !request.Headers.ContainsKey("Authorization") &&
+                    request.Cookies.TryGetValue(
+                        VideoAuthCookieDefaults.Name,
+                        out var videoAuthToken))
+                {
+                    context.Token = videoAuthToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -236,6 +256,28 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
+
+
+static bool IsConsultationVideoRequest(HttpRequest request)
+{
+    if (!HttpMethods.IsGet(request.Method))
+    {
+        return false;
+    }
+
+    var pathSegments = request.Path.Value?
+        .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+    if (pathSegments is null || pathSegments.Length != 4)
+    {
+        return false;
+    }
+
+    return pathSegments[0].Equals("api", StringComparison.OrdinalIgnoreCase)
+        && pathSegments[1].Equals("consultations", StringComparison.OrdinalIgnoreCase)
+        && Guid.TryParse(pathSegments[2], out _)
+        && pathSegments[3].Equals("video", StringComparison.OrdinalIgnoreCase);
+}
 
 static void ConfigureSlidingWindowLimiter(
     SlidingWindowRateLimiterOptions limiterOptions,
