@@ -1,34 +1,19 @@
-import {
-    CheckCircle2,
-    FileSearch2,
-    PlayCircle,
-} from "lucide-react";
+import { CheckCircle2, FileSearch2, PlayCircle } from "lucide-react";
 
 import styles from "./StatusState.module.css";
 
 function CompletedState() {
     return (
-        <section
-            className={`${styles.panel} ${styles.completedPanel}`}
-        >
-            <span
-                className={`${styles.heroIcon} ${styles.completedIcon}`}
-            >
+        <section className={`${styles.panel} ${styles.completedPanel}`}>
+            <span className={`${styles.heroIcon} ${styles.completedIcon}`}>
                 <CheckCircle2 size={31} />
             </span>
 
-            <span className={styles.eyebrow}>
-                Processing complete
-            </span>
-
-            <h2>
-                Your consultation is ready
-            </h2>
-
+            <span className={styles.eyebrow}>Processing complete</span>
+            <h2>Your consultation is ready</h2>
             <p>
-                The video was processed
-                successfully and its transcript
-                was indexed for review.
+                The video was processed successfully. Use the review workspace below
+                to search the transcript and open the exact matching moment.
             </p>
 
             <div className={styles.readyGrid}>
@@ -36,16 +21,9 @@ function CompletedState() {
                     <span>
                         <PlayCircle size={18} />
                     </span>
-
                     <div>
-                        <strong>
-                            Video prepared
-                        </strong>
-
-                        <small>
-                            The recording is ready
-                            for secure playback.
-                        </small>
+                        <strong>Video prepared</strong>
+                        <small>The recording is ready for secure playback.</small>
                     </div>
                 </div>
 
@@ -53,17 +31,9 @@ function CompletedState() {
                     <span>
                         <FileSearch2 size={18} />
                     </span>
-
                     <div>
-                        <strong>
-                            Transcript indexed
-                        </strong>
-
-                        <small>
-                            Transcript search will
-                            be connected in the next
-                            feature.
-                        </small>
+                        <strong>Transcript indexed</strong>
+                        <small>Relevant moments can now be opened from search.</small>
                     </div>
                 </div>
             </div>
