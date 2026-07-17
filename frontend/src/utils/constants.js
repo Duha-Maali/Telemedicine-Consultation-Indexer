@@ -8,6 +8,7 @@ export const ROUTES = {
     LOGIN: "/login",
     REGISTER: "/register",
     DASHBOARD: "/",
+    CONSULTATIONS: "/consultations",
 };
 
 export const CONSULTATION_STATUS = {

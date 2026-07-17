@@ -8,6 +8,7 @@ import DashboardLayout from "../layout/DashboardLayout/DashboardLayout";
 import DashboardPage from "../pages/DashboardPage/DashboardPage";
 import LoginPage from "../pages/LoginPage/LoginPage";
 import RegisterPage from "../pages/RegisterPage/RegisterPage";
+import ConsultationsPage from "../pages/ConsultationsPage/ConsultationsPage";
 import { ROUTES } from "../utils/constants";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -41,7 +42,11 @@ export const router = createBrowserRouter([
                         path: ROUTES.DASHBOARD,
                         element: <DashboardPage />,
                     },
-                ],
+                    {
+                        path: ROUTES.CONSULTATIONS,
+                        element: <ConsultationsPage />,
+                    },
+                ],  
             },
         ],
     },

@@ -1,5 +1,6 @@
 import {
     LayoutDashboard,
+    ListVideo,
     LogOut,
     X,
 } from "lucide-react";
@@ -21,6 +22,12 @@ const navigationItems = [
         label: "Dashboard",
         to: ROUTES.DASHBOARD,
         icon: LayoutDashboard,
+        end: true,
+    },
+    {
+        label: "Consultations",
+        to: ROUTES.CONSULTATIONS,
+        icon: ListVideo,
         end: true,
     },
 ];

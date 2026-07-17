@@ -6,6 +6,12 @@ import {
 import StatusBadge from "../../shared/StatusBadge/StatusBadge";
 import styles from "./RecentConsultations.module.css";
 
+import { Link } from "react-router-dom";
+
+import {
+    ROUTES,
+} from "../../../utils/constants";
+
 const dateFormatter = new Intl.DateTimeFormat(
     "en",
     {
@@ -45,6 +51,12 @@ function RecentConsultations({
                         consultation records.
                     </p>
                 </div>
+                <Link
+                    className={styles.viewAllLink}
+                    to={ROUTES.CONSULTATIONS}
+                    >
+                        View all
+                </Link>
             </div>
 
             {consultations.length === 0 ? (

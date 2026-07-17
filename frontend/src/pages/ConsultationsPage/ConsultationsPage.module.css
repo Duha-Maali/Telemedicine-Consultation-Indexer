@@ -1,0 +1,128 @@
+.page {
+    display: grid;
+    gap: 24px;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--color-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.pageHeader h1 {
+    margin: 0;
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.16;
+    letter-spacing: -0.9px;
+}
+
+.pageHeader p {
+    margin: 9px 0 0;
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+.refreshButton {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 0 14px;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 11px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.refreshButton:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.refreshButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.spinning {
+    animation: spin 0.85s linear infinite;
+}
+
+.errorState {
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 13px;
+    background: #fef2f2;
+}
+
+.errorState div {
+    display: grid;
+    gap: 3px;
+}
+
+.errorState strong {
+    font-size: 13px;
+}
+
+.errorState span {
+    font-size: 12px;
+}
+
+.errorState button {
+    padding: 8px 11px;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 720px) {
+    .pageHeader {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .refreshButton {
+        width: 100%;
+    }
+
+    .errorState {
+        grid-template-columns:
+            auto minmax(0, 1fr);
+    }
+
+    .errorState button {
+        grid-column: 2;
+        width: fit-content;
+    }
+}
