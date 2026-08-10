@@ -1,0 +1,17 @@
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 13px;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    background: #fef2f2;
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.alert svg {
+    flex: 0 0 auto;
+    margin-top: 1px;
+}

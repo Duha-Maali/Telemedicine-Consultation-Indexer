@@ -1,0 +1,34 @@
+.layout {
+    min-height: 100dvh;
+    background:
+        radial-gradient(circle at 85% 0%, rgba(37, 99, 235, 0.07), transparent 26%),
+        var(--color-background);
+}
+
+.contentArea {
+    min-width: 0;
+    min-height: 100dvh;
+    margin-left: var(--sidebar-width);
+}
+
+.mainContent {
+    width: min(100%, 1500px);
+    margin: 0 auto;
+    padding: 30px 32px 48px;
+}
+
+@media (max-width: 980px) {
+    .contentArea {
+        margin-left: 0;
+    }
+
+    .mainContent {
+        padding: 26px 22px 42px;
+    }
+}
+
+@media (max-width: 620px) {
+    .mainContent {
+        padding: 22px 16px 36px;
+    }
+}
